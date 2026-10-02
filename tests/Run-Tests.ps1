@@ -248,3 +248,4 @@ if ($failures.Count -gt 0) {
     throw "$($failures.Count) 项测试失败。"
 }
 Write-Host 'CheckSentry 自动化检查全部通过。' -ForegroundColor Green
+& (Join-Path $PSScriptRoot 'Security-Tests.ps1')

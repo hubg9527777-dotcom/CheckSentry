@@ -12,6 +12,8 @@
     <InvariantGlobalization>false</InvariantGlobalization>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Start-ComplianceCheck.ps1" LogicalName="payload/Start-ComplianceCheck.ps1" />

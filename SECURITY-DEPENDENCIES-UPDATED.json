@@ -1,0 +1,4593 @@
+{
+  "date": "2026-10-02",
+  "scope": "Official upstream lockfiles at pinned commits; npm audit --omit=dev --ignore-scripts. Lockfile findings do not prove reachability in compiled action bundles.",
+  "actions": [
+    {
+      "repo": "actions/checkout",
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "packageMetadataVersion": "7.0.1",
+      "source": "https://github.com/actions/checkout/blob/3d3c42e5aac5ba805825da76410c181273ba90b1/package-lock.json",
+      "direct": {
+        "@actions/core": {
+          "declared": "^3.0.1",
+          "actual": "3.0.1"
+        },
+        "@actions/exec": {
+          "declared": "^3.0.0",
+          "actual": "3.0.0"
+        },
+        "@actions/github": {
+          "declared": "^9.1.1",
+          "actual": "9.1.1"
+        },
+        "@actions/io": {
+          "declared": "^3.0.2",
+          "actual": "3.0.2"
+        },
+        "@actions/tool-cache": {
+          "declared": "^4.0.0",
+          "actual": "4.0.0"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/core",
+          "version": "3.0.1"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "9.1.1"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/tool-cache",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@actions/tool-cache/node_modules/semver",
+          "version": "7.8.4"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.10"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/content-type",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/json-with-bigint",
+          "version": "3.5.8"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/undici",
+          "version": "6.27.0"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "7.0.3"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 1,
+        "critical": 0,
+        "total": 1
+      },
+      "findings": [
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+              "url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+              "url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+              "url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+              "severity": "moderate",
+              "affected": ">=6.25.0 <6.28.1"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "actions/setup-dotnet",
+      "sha": "a98b56852c35b8e3190ac28c8c2271da59106c68",
+      "packageMetadataVersion": "6.0.0",
+      "source": "https://github.com/actions/setup-dotnet/blob/a98b56852c35b8e3190ac28c8c2271da59106c68/package-lock.json",
+      "direct": {
+        "@actions/cache": {
+          "declared": "^6.2.0",
+          "actual": "6.2.0"
+        },
+        "@actions/core": {
+          "declared": "^3.0.1",
+          "actual": "3.0.1"
+        },
+        "@actions/exec": {
+          "declared": "^3.0.0",
+          "actual": "3.0.0"
+        },
+        "@actions/github": {
+          "declared": "^9.1.1",
+          "actual": "9.1.1"
+        },
+        "@actions/glob": {
+          "declared": "^0.7.0",
+          "actual": "0.7.0"
+        },
+        "@actions/http-client": {
+          "declared": "^4.0.1",
+          "actual": "4.0.1"
+        },
+        "@actions/io": {
+          "declared": "^3.0.2",
+          "actual": "3.0.2"
+        },
+        "fast-xml-parser": {
+          "declared": "^5.9.3",
+          "actual": "5.9.3"
+        },
+        "json5": {
+          "declared": "^2.2.3",
+          "actual": "2.2.3"
+        },
+        "semver": {
+          "declared": "^7.8.5",
+          "actual": "7.8.5"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/cache",
+          "version": "6.2.0"
+        },
+        {
+          "path": "node_modules/@actions/cache/node_modules/@actions/glob",
+          "version": "0.6.1"
+        },
+        {
+          "path": "node_modules/@actions/core",
+          "version": "3.0.1"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "9.1.1"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/glob",
+          "version": "0.7.0"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/minimatch",
+          "version": "10.2.5"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-auth",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-client",
+          "version": "1.10.2"
+        },
+        {
+          "path": "node_modules/@azure/core-http-compat",
+          "version": "2.4.0"
+        },
+        {
+          "path": "node_modules/@azure/core-lro",
+          "version": "2.7.2"
+        },
+        {
+          "path": "node_modules/@azure/core-paging",
+          "version": "1.6.2"
+        },
+        {
+          "path": "node_modules/@azure/core-rest-pipeline",
+          "version": "1.24.0"
+        },
+        {
+          "path": "node_modules/@azure/core-tracing",
+          "version": "1.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-util",
+          "version": "1.13.1"
+        },
+        {
+          "path": "node_modules/@azure/core-xml",
+          "version": "1.5.1"
+        },
+        {
+          "path": "node_modules/@azure/logger",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-blob",
+          "version": "12.32.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-common",
+          "version": "12.4.1"
+        },
+        {
+          "path": "node_modules/@nodable/entities",
+          "version": "2.2.0"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.10"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime-rpc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@typespec/ts-http-runtime",
+          "version": "0.3.6"
+        },
+        {
+          "path": "node_modules/agent-base",
+          "version": "7.1.4"
+        },
+        {
+          "path": "node_modules/anynum",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.6"
+        },
+        {
+          "path": "node_modules/concat-map",
+          "version": "0.0.1"
+        },
+        {
+          "path": "node_modules/content-type",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/debug",
+          "version": "4.4.3"
+        },
+        {
+          "path": "node_modules/events",
+          "version": "3.3.0"
+        },
+        {
+          "path": "node_modules/fast-xml-builder",
+          "version": "1.2.0"
+        },
+        {
+          "path": "node_modules/fast-xml-parser",
+          "version": "5.9.3"
+        },
+        {
+          "path": "node_modules/http-proxy-agent",
+          "version": "7.0.2"
+        },
+        {
+          "path": "node_modules/https-proxy-agent",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/is-unsafe",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/json-with-bigint",
+          "version": "3.5.8"
+        },
+        {
+          "path": "node_modules/json5",
+          "version": "2.2.3"
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "3.1.5"
+        },
+        {
+          "path": "node_modules/minimatch/node_modules/balanced-match",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/minimatch/node_modules/brace-expansion",
+          "version": "1.1.15"
+        },
+        {
+          "path": "node_modules/ms",
+          "version": "2.1.3"
+        },
+        {
+          "path": "node_modules/path-expression-matcher",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/semver",
+          "version": "7.8.5"
+        },
+        {
+          "path": "node_modules/strnum",
+          "version": "2.4.1"
+        },
+        {
+          "path": "node_modules/tslib",
+          "version": "2.8.1"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/undici",
+          "version": "6.27.0"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/xml-naming",
+          "version": "0.1.0"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 3,
+        "critical": 0,
+        "total": 3
+      },
+      "findings": [
+        {
+          "name": "brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/brace-expansion",
+            "node_modules/minimatch/node_modules/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": "<1.1.16"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=3.0.0 <5.0.7"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": "<1.1.17"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.8"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.9"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": "<1.1.18"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": "<1.1.21"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=4.0.0 <5.0.12"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": "<1.1.20"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.11"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": "<1.1.19"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.10"
+            }
+          ]
+        },
+        {
+          "name": "fast-xml-parser",
+          "severity": "high",
+          "paths": [
+            "node_modules/fast-xml-parser"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "fast-xml-parser: Repeated DOCTYPE declarations reset entity expansion limits",
+              "url": "https://github.com/advisories/GHSA-8r6m-32jq-jx6q",
+              "severity": "high",
+              "affected": ">=5.9.3 <5.10.1"
+            }
+          ]
+        },
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+              "url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+              "url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+              "url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+              "severity": "moderate",
+              "affected": ">=6.25.0 <6.28.1"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "github/codeql-action",
+      "sha": "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2",
+      "packageMetadataVersion": "4.38.2",
+      "source": "https://github.com/github/codeql-action/blob/2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2/package-lock.json",
+      "direct": {
+        "@actions/artifact": {
+          "declared": "^5.0.3",
+          "actual": "5.0.3"
+        },
+        "@actions/artifact-legacy": {
+          "declared": "npm:@actions/artifact@^1.1.2",
+          "actual": "1.1.2"
+        },
+        "@actions/cache": {
+          "declared": "^5.2.0",
+          "actual": "5.2.0"
+        },
+        "@actions/core": {
+          "declared": "^2.0.3",
+          "actual": "2.0.3"
+        },
+        "@actions/exec": {
+          "declared": "^2.0.0",
+          "actual": "2.0.0"
+        },
+        "@actions/github": {
+          "declared": "^8.0.1",
+          "actual": "8.0.1"
+        },
+        "@actions/glob": {
+          "declared": "^0.5.0",
+          "actual": "0.5.1"
+        },
+        "@actions/http-client": {
+          "declared": "^3.0.0",
+          "actual": "3.0.2"
+        },
+        "@actions/io": {
+          "declared": "^2.0.0",
+          "actual": "2.0.0"
+        },
+        "@actions/tool-cache": {
+          "declared": "^3.0.1",
+          "actual": "3.0.1"
+        },
+        "@octokit/core": {
+          "declared": "^7.0.8",
+          "actual": "7.0.8"
+        },
+        "@octokit/plugin-paginate-rest": {
+          "declared": "^15.0.0",
+          "actual": "15.0.0"
+        },
+        "@octokit/plugin-rest-endpoint-methods": {
+          "declared": "^18.0.0",
+          "actual": "18.0.0"
+        },
+        "@octokit/plugin-retry": {
+          "declared": "^8.1.1",
+          "actual": "8.1.1"
+        },
+        "archiver": {
+          "declared": "^8.0.0",
+          "actual": "8.0.0"
+        },
+        "fast-deep-equal": {
+          "declared": "^3.1.3",
+          "actual": "3.1.3"
+        },
+        "follow-redirects": {
+          "declared": "^1.16.0",
+          "actual": "1.16.0"
+        },
+        "get-folder-size": {
+          "declared": "^5.0.0",
+          "actual": "5.0.0"
+        },
+        "https-proxy-agent": {
+          "declared": "^7.0.6",
+          "actual": "7.0.6"
+        },
+        "js-yaml": {
+          "declared": "^5.4.2",
+          "actual": "5.4.2"
+        },
+        "jsonschema": {
+          "declared": "1.5.0",
+          "actual": "1.5.0"
+        },
+        "long": {
+          "declared": "^5.3.2",
+          "actual": "5.3.2"
+        },
+        "node-forge": {
+          "declared": "^1.4.0",
+          "actual": "1.4.0"
+        },
+        "semver": {
+          "declared": "^7.8.5",
+          "actual": "7.8.5"
+        },
+        "undici": {
+          "declared": "^6.28.0",
+          "actual": "6.28.0"
+        },
+        "uuid": {
+          "declared": "^14.0.2",
+          "actual": "14.0.2"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/artifact",
+          "version": "5.0.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact-legacy",
+          "version": "1.1.2"
+        },
+        {
+          "path": "node_modules/@actions/artifact-legacy/node_modules/@actions/core",
+          "version": "1.11.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact-legacy/node_modules/@actions/exec",
+          "version": "1.1.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact-legacy/node_modules/@actions/http-client",
+          "version": "2.2.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact-legacy/node_modules/@actions/io",
+          "version": "1.1.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@actions/github",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "2.2.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/auth-token",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/core",
+          "version": "5.2.2"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/endpoint",
+          "version": "9.0.6"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/graphql",
+          "version": "7.1.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/openapi-types",
+          "version": "12.11.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-paginate-rest",
+          "version": "9.2.2"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-paginate-rest/node_modules/@octokit/openapi-types",
+          "version": "20.0.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-paginate-rest/node_modules/@octokit/types",
+          "version": "12.6.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "10.4.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-rest-endpoint-methods/node_modules/@octokit/openapi-types",
+          "version": "20.0.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-rest-endpoint-methods/node_modules/@octokit/types",
+          "version": "12.6.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-retry",
+          "version": "3.0.9"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/plugin-retry/node_modules/@octokit/types",
+          "version": "6.41.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/request",
+          "version": "8.4.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/request-error",
+          "version": "5.1.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/types",
+          "version": "13.10.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/@octokit/types/node_modules/@octokit/openapi-types",
+          "version": "24.2.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/archiver",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/before-after-hook",
+          "version": "2.2.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/brace-expansion",
+          "version": "2.1.4"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/compress-commons",
+          "version": "6.0.2"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/crc32-stream",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/is-stream",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/minimatch",
+          "version": "5.1.9"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/readdir-glob",
+          "version": "1.1.3"
+        },
+        {
+          "path": "node_modules/@actions/artifact/node_modules/zip-stream",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/@actions/cache",
+          "version": "5.2.0"
+        },
+        {
+          "path": "node_modules/@actions/cache/node_modules/semver",
+          "version": "6.3.1"
+        },
+        {
+          "path": "node_modules/@actions/core",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "8.0.1"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/@actions/glob",
+          "version": "0.5.1"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/@actions/tool-cache",
+          "version": "3.0.1"
+        },
+        {
+          "path": "node_modules/@azure/abort-controller",
+          "version": "1.1.0"
+        },
+        {
+          "path": "node_modules/@azure/core-auth",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-auth/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-client",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-client/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-http-compat",
+          "version": "2.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-http-compat/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-lro",
+          "version": "2.7.2"
+        },
+        {
+          "path": "node_modules/@azure/core-lro/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-paging",
+          "version": "1.6.2"
+        },
+        {
+          "path": "node_modules/@azure/core-rest-pipeline",
+          "version": "1.22.2"
+        },
+        {
+          "path": "node_modules/@azure/core-rest-pipeline/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-tracing",
+          "version": "1.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-util",
+          "version": "1.13.1"
+        },
+        {
+          "path": "node_modules/@azure/core-util/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-xml",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/@azure/logger",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-blob",
+          "version": "12.29.1"
+        },
+        {
+          "path": "node_modules/@azure/storage-blob/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/storage-common",
+          "version": "12.1.1"
+        },
+        {
+          "path": "node_modules/@azure/storage-common/node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@nodable/entities",
+          "version": "2.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.8"
+        },
+        {
+          "path": "node_modules/@octokit/core/node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.5"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint/node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.5"
+        },
+        {
+          "path": "node_modules/@octokit/graphql/node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "29.0.1"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "15.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest/node_modules/@octokit/openapi-types",
+          "version": "28.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest/node_modules/@octokit/types",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-request-log",
+          "version": "1.0.4"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "18.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods/node_modules/@octokit/openapi-types",
+          "version": "28.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods/node_modules/@octokit/types",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry",
+          "version": "8.1.1"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry/node_modules/@octokit/openapi-types",
+          "version": "28.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry/node_modules/@octokit/types",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.16"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/@octokit/request/node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "18.0.0"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin",
+          "version": "2.9.4"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin-framework",
+          "version": "2.9.4"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin-framework/node_modules/typescript",
+          "version": "3.9.10"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin/node_modules/typescript",
+          "version": "3.9.10"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/protoc",
+          "version": "2.9.4"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime-rpc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@types/debug",
+          "version": "4.1.13"
+        },
+        {
+          "path": "node_modules/@types/mdast",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/@types/ms",
+          "version": "2.1.0"
+        },
+        {
+          "path": "node_modules/@types/unist",
+          "version": "3.0.3"
+        },
+        {
+          "path": "node_modules/@typespec/ts-http-runtime",
+          "version": "0.3.2"
+        },
+        {
+          "path": "node_modules/abort-controller",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/agent-base",
+          "version": "7.1.3"
+        },
+        {
+          "path": "node_modules/archiver",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/archiver-utils",
+          "version": "5.0.2"
+        },
+        {
+          "path": "node_modules/archiver-utils/node_modules/is-stream",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/argparse",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/async",
+          "version": "3.2.6"
+        },
+        {
+          "path": "node_modules/b4a",
+          "version": "1.6.7"
+        },
+        {
+          "path": "node_modules/balanced-match",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/bare-events",
+          "version": "2.5.0"
+        },
+        {
+          "path": "node_modules/base64-js",
+          "version": "1.5.1"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/binary",
+          "version": "0.3.0"
+        },
+        {
+          "path": "node_modules/bottleneck",
+          "version": "2.19.5"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "1.1.18"
+        },
+        {
+          "path": "node_modules/buffer",
+          "version": "6.0.3"
+        },
+        {
+          "path": "node_modules/buffer-crc32",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/buffers",
+          "version": "0.1.1"
+        },
+        {
+          "path": "node_modules/chainsaw",
+          "version": "0.1.0"
+        },
+        {
+          "path": "node_modules/character-entities",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/compress-commons",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/concat-map",
+          "version": "0.0.1"
+        },
+        {
+          "path": "node_modules/content-type",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/core-util-is",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/crc-32",
+          "version": "1.2.2"
+        },
+        {
+          "path": "node_modules/crc32-stream",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/debug",
+          "version": "4.4.1"
+        },
+        {
+          "path": "node_modules/decode-named-character-reference",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/deprecation",
+          "version": "2.3.1"
+        },
+        {
+          "path": "node_modules/dequal",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/devlop",
+          "version": "1.1.0"
+        },
+        {
+          "path": "node_modules/event-target-shim",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/events",
+          "version": "3.3.0"
+        },
+        {
+          "path": "node_modules/fast-deep-equal",
+          "version": "3.1.3"
+        },
+        {
+          "path": "node_modules/fast-fifo",
+          "version": "1.3.2"
+        },
+        {
+          "path": "node_modules/fast-xml-builder",
+          "version": "1.2.0"
+        },
+        {
+          "path": "node_modules/fast-xml-parser",
+          "version": "5.7.1"
+        },
+        {
+          "path": "node_modules/follow-redirects",
+          "version": "1.16.0"
+        },
+        {
+          "path": "node_modules/get-folder-size",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/glob",
+          "version": "13.0.6"
+        },
+        {
+          "path": "node_modules/glob/node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/glob/node_modules/brace-expansion",
+          "version": "5.0.9"
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "10.2.4"
+        },
+        {
+          "path": "node_modules/graceful-fs",
+          "version": "4.2.10"
+        },
+        {
+          "path": "node_modules/http-proxy-agent",
+          "version": "7.0.2"
+        },
+        {
+          "path": "node_modules/https-proxy-agent",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/ieee754",
+          "version": "1.2.1"
+        },
+        {
+          "path": "node_modules/inherits",
+          "version": "2.0.4"
+        },
+        {
+          "path": "node_modules/is-stream",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/js-yaml",
+          "version": "5.4.2"
+        },
+        {
+          "path": "node_modules/json-with-bigint",
+          "version": "3.5.12"
+        },
+        {
+          "path": "node_modules/jsonschema",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/jwt-decode",
+          "version": "3.1.2"
+        },
+        {
+          "path": "node_modules/lazystream",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/isarray",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/readable-stream",
+          "version": "2.3.8"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/safe-buffer",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/string_decoder",
+          "version": "1.1.1"
+        },
+        {
+          "path": "node_modules/lite-matter",
+          "version": "0.1.2"
+        },
+        {
+          "path": "node_modules/lodash",
+          "version": "4.18.1"
+        },
+        {
+          "path": "node_modules/long",
+          "version": "5.3.2"
+        },
+        {
+          "path": "node_modules/lru-cache",
+          "version": "11.5.1"
+        },
+        {
+          "path": "node_modules/mdast-util-from-markdown",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/mdast-util-to-string",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/micromark",
+          "version": "4.0.2"
+        },
+        {
+          "path": "node_modules/micromark-core-commonmark",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/micromark-factory-destination",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-factory-label",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-factory-space",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-factory-title",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-factory-whitespace",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-character",
+          "version": "2.1.1"
+        },
+        {
+          "path": "node_modules/micromark-util-chunked",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-classify-character",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-combine-extensions",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-decode-numeric-character-reference",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/micromark-util-decode-string",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-encode",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-html-tag-name",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-normalize-identifier",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-resolve-all",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-sanitize-uri",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-subtokenize",
+          "version": "2.1.0"
+        },
+        {
+          "path": "node_modules/micromark-util-symbol",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/micromark-util-types",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "3.1.5"
+        },
+        {
+          "path": "node_modules/minimist",
+          "version": "1.2.8"
+        },
+        {
+          "path": "node_modules/minipass",
+          "version": "7.1.3"
+        },
+        {
+          "path": "node_modules/mkdirp",
+          "version": "0.5.6"
+        },
+        {
+          "path": "node_modules/ms",
+          "version": "2.1.3"
+        },
+        {
+          "path": "node_modules/node-forge",
+          "version": "1.4.0"
+        },
+        {
+          "path": "node_modules/normalize-path",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/once",
+          "version": "1.4.0"
+        },
+        {
+          "path": "node_modules/path-expression-matcher",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/path-scurry",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/process",
+          "version": "0.11.10"
+        },
+        {
+          "path": "node_modules/process-nextick-args",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/queue-tick",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/readable-stream",
+          "version": "4.7.0"
+        },
+        {
+          "path": "node_modules/readdir-glob",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/brace-expansion",
+          "version": "5.0.9"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/minimatch",
+          "version": "10.2.5"
+        },
+        {
+          "path": "node_modules/safe-buffer",
+          "version": "5.2.1"
+        },
+        {
+          "path": "node_modules/semver",
+          "version": "7.8.5"
+        },
+        {
+          "path": "node_modules/streamx",
+          "version": "2.20.1"
+        },
+        {
+          "path": "node_modules/string_decoder",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/strnum",
+          "version": "2.2.3"
+        },
+        {
+          "path": "node_modules/tar-stream",
+          "version": "3.1.7"
+        },
+        {
+          "path": "node_modules/text-decoder",
+          "version": "1.2.0"
+        },
+        {
+          "path": "node_modules/tmp",
+          "version": "0.2.7"
+        },
+        {
+          "path": "node_modules/tmp-promise",
+          "version": "3.0.3"
+        },
+        {
+          "path": "node_modules/traverse",
+          "version": "0.3.9"
+        },
+        {
+          "path": "node_modules/tslib",
+          "version": "2.8.1"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/undici",
+          "version": "6.28.0"
+        },
+        {
+          "path": "node_modules/unist-util-stringify-position",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/unzip-stream",
+          "version": "0.3.4"
+        },
+        {
+          "path": "node_modules/util-deprecate",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/uuid",
+          "version": "14.0.2"
+        },
+        {
+          "path": "node_modules/wrappy",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/xml-naming",
+          "version": "0.1.0"
+        },
+        {
+          "path": "node_modules/yaml",
+          "version": "2.9.1"
+        },
+        {
+          "path": "node_modules/zip-stream",
+          "version": "7.0.5"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 3,
+        "critical": 0,
+        "total": 3
+      },
+      "findings": [
+        {
+          "name": "brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/@actions/artifact/node_modules/brace-expansion",
+            "node_modules/brace-expansion",
+            "node_modules/glob/node_modules/brace-expansion",
+            "node_modules/readdir-glob/node_modules/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": "<1.1.21"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.1.7"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=4.0.0 <5.0.12"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": "<1.1.20"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.6"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.11"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": "<1.1.19"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.5"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.10"
+            }
+          ]
+        },
+        {
+          "name": "node-forge",
+          "severity": "high",
+          "paths": [
+            "node_modules/node-forge"
+          ],
+          "fixAvailable": false,
+          "advisories": [
+            {
+              "title": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+              "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+              "severity": "high",
+              "affected": "<=1.4.0"
+            }
+          ]
+        },
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+              "url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+              "severity": "moderate",
+              "affected": ">=6.25.0 <6.28.1"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "actions/upload-artifact",
+      "sha": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+      "packageMetadataVersion": "7.0.1",
+      "source": "https://github.com/actions/upload-artifact/blob/043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/package-lock.json",
+      "direct": {
+        "@actions/artifact": {
+          "declared": "^6.2.0",
+          "actual": "6.2.0"
+        },
+        "@actions/core": {
+          "declared": "^3.0.0",
+          "actual": "3.0.0"
+        },
+        "@actions/github": {
+          "declared": "^9.0.0",
+          "actual": "9.0.0"
+        },
+        "@actions/glob": {
+          "declared": "^0.6.1",
+          "actual": "0.6.1"
+        },
+        "@actions/io": {
+          "declared": "^3.0.2",
+          "actual": "3.0.2"
+        },
+        "minimatch": {
+          "declared": "^10.1.1",
+          "actual": "10.2.4"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/artifact",
+          "version": "6.2.0"
+        },
+        {
+          "path": "node_modules/@actions/core",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "9.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/glob",
+          "version": "0.6.1"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/balanced-match",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/brace-expansion",
+          "version": "1.1.12"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/minimatch",
+          "version": "3.1.5"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-auth",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-client",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-http-compat",
+          "version": "2.3.2"
+        },
+        {
+          "path": "node_modules/@azure/core-lro",
+          "version": "2.7.2"
+        },
+        {
+          "path": "node_modules/@azure/core-paging",
+          "version": "1.6.2"
+        },
+        {
+          "path": "node_modules/@azure/core-rest-pipeline",
+          "version": "1.22.2"
+        },
+        {
+          "path": "node_modules/@azure/core-tracing",
+          "version": "1.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-util",
+          "version": "1.13.1"
+        },
+        {
+          "path": "node_modules/@azure/core-xml",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/@azure/logger",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-blob",
+          "version": "12.31.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-common",
+          "version": "12.3.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protobuf",
+          "version": "2.11.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protoplugin",
+          "version": "2.11.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protoplugin/node_modules/typescript",
+          "version": "5.4.5"
+        },
+        {
+          "path": "node_modules/@isaacs/cliui",
+          "version": "8.0.2"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-request-log",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry",
+          "version": "8.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.8"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/@pkgjs/parseargs",
+          "version": "0.11.0"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin/node_modules/typescript",
+          "version": "3.9.10"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/protoc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime-rpc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@typescript/vfs",
+          "version": "1.6.4"
+        },
+        {
+          "path": "node_modules/@typespec/ts-http-runtime",
+          "version": "0.3.5"
+        },
+        {
+          "path": "node_modules/abort-controller",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/agent-base",
+          "version": "7.1.4"
+        },
+        {
+          "path": "node_modules/ansi-regex",
+          "version": "6.2.2"
+        },
+        {
+          "path": "node_modules/ansi-styles",
+          "version": "4.3.0"
+        },
+        {
+          "path": "node_modules/archiver",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/archiver-utils",
+          "version": "5.0.2"
+        },
+        {
+          "path": "node_modules/async",
+          "version": "3.2.6"
+        },
+        {
+          "path": "node_modules/b4a",
+          "version": "1.8.0"
+        },
+        {
+          "path": "node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/bare-events",
+          "version": "2.8.2"
+        },
+        {
+          "path": "node_modules/base64-js",
+          "version": "1.5.1"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/binary",
+          "version": "0.3.0"
+        },
+        {
+          "path": "node_modules/bottleneck",
+          "version": "2.19.5"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.3"
+        },
+        {
+          "path": "node_modules/buffer",
+          "version": "6.0.3"
+        },
+        {
+          "path": "node_modules/buffer-crc32",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/buffers",
+          "version": "0.1.1"
+        },
+        {
+          "path": "node_modules/chainsaw",
+          "version": "0.1.0"
+        },
+        {
+          "path": "node_modules/color-convert",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/color-name",
+          "version": "1.1.4"
+        },
+        {
+          "path": "node_modules/compress-commons",
+          "version": "6.0.2"
+        },
+        {
+          "path": "node_modules/concat-map",
+          "version": "0.0.1"
+        },
+        {
+          "path": "node_modules/core-util-is",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/crc-32",
+          "version": "1.2.2"
+        },
+        {
+          "path": "node_modules/crc32-stream",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/cross-spawn",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/debug",
+          "version": "4.4.3"
+        },
+        {
+          "path": "node_modules/eastasianwidth",
+          "version": "0.2.0"
+        },
+        {
+          "path": "node_modules/emoji-regex",
+          "version": "9.2.2"
+        },
+        {
+          "path": "node_modules/event-target-shim",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/events",
+          "version": "3.3.0"
+        },
+        {
+          "path": "node_modules/events-universal",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/fast-content-type-parse",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/fast-fifo",
+          "version": "1.3.2"
+        },
+        {
+          "path": "node_modules/fast-xml-builder",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/fast-xml-parser",
+          "version": "5.4.1"
+        },
+        {
+          "path": "node_modules/foreground-child",
+          "version": "3.3.1"
+        },
+        {
+          "path": "node_modules/glob",
+          "version": "10.5.0"
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "9.0.8"
+        },
+        {
+          "path": "node_modules/graceful-fs",
+          "version": "4.2.11"
+        },
+        {
+          "path": "node_modules/http-proxy-agent",
+          "version": "7.0.2"
+        },
+        {
+          "path": "node_modules/https-proxy-agent",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/ieee754",
+          "version": "1.2.1"
+        },
+        {
+          "path": "node_modules/inherits",
+          "version": "2.0.4"
+        },
+        {
+          "path": "node_modules/is-fullwidth-code-point",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/is-stream",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/isexe",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/jackspeak",
+          "version": "3.4.3"
+        },
+        {
+          "path": "node_modules/json-with-bigint",
+          "version": "3.5.3"
+        },
+        {
+          "path": "node_modules/jwt-decode",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/lazystream",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/isarray",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/readable-stream",
+          "version": "2.3.8"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/safe-buffer",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/string_decoder",
+          "version": "1.1.1"
+        },
+        {
+          "path": "node_modules/lodash",
+          "version": "4.17.23"
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "10.2.4"
+        },
+        {
+          "path": "node_modules/minimist",
+          "version": "1.2.8"
+        },
+        {
+          "path": "node_modules/minipass",
+          "version": "7.1.3"
+        },
+        {
+          "path": "node_modules/mkdirp",
+          "version": "0.5.6"
+        },
+        {
+          "path": "node_modules/ms",
+          "version": "2.1.3"
+        },
+        {
+          "path": "node_modules/normalize-path",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/package-json-from-dist",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/path-key",
+          "version": "3.1.1"
+        },
+        {
+          "path": "node_modules/path-scurry",
+          "version": "1.11.1"
+        },
+        {
+          "path": "node_modules/path-scurry/node_modules/lru-cache",
+          "version": "10.4.3"
+        },
+        {
+          "path": "node_modules/process",
+          "version": "0.11.10"
+        },
+        {
+          "path": "node_modules/process-nextick-args",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/readable-stream",
+          "version": "4.7.0"
+        },
+        {
+          "path": "node_modules/readdir-glob",
+          "version": "1.1.3"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/balanced-match",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/brace-expansion",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/minimatch",
+          "version": "5.1.8"
+        },
+        {
+          "path": "node_modules/safe-buffer",
+          "version": "5.2.1"
+        },
+        {
+          "path": "node_modules/shebang-command",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/shebang-regex",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/signal-exit",
+          "version": "4.1.0"
+        },
+        {
+          "path": "node_modules/streamx",
+          "version": "2.23.0"
+        },
+        {
+          "path": "node_modules/string_decoder",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/string-width",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/string-width-cjs",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/strip-ansi",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strip-ansi",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/strip-ansi-cjs",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strip-ansi-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/strnum",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/tar-stream",
+          "version": "3.1.7"
+        },
+        {
+          "path": "node_modules/text-decoder",
+          "version": "1.2.7"
+        },
+        {
+          "path": "node_modules/traverse",
+          "version": "0.3.9"
+        },
+        {
+          "path": "node_modules/tslib",
+          "version": "2.8.1"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/typescript",
+          "version": "5.9.3"
+        },
+        {
+          "path": "node_modules/undici",
+          "version": "6.23.0"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/unzip-stream",
+          "version": "0.3.4"
+        },
+        {
+          "path": "node_modules/util-deprecate",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/which",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/wrap-ansi",
+          "version": "8.1.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs",
+          "version": "7.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/string-width",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/strip-ansi",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/wrap-ansi/node_modules/ansi-styles",
+          "version": "6.2.3"
+        },
+        {
+          "path": "node_modules/zip-stream",
+          "version": "6.0.1"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 5,
+        "critical": 0,
+        "total": 5
+      },
+      "findings": [
+        {
+          "name": "brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/@actions/glob/node_modules/brace-expansion",
+            "node_modules/brace-expansion",
+            "node_modules/readdir-glob/node_modules/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+              "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+              "severity": "moderate",
+              "affected": "<1.1.13"
+            },
+            {
+              "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+              "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.0.3"
+            },
+            {
+              "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+              "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+              "severity": "moderate",
+              "affected": ">=4.0.0 <5.0.5"
+            },
+            {
+              "title": "brace-expansion: Large numeric range defeats documented `max` DoS protection",
+              "url": "https://github.com/advisories/GHSA-jxxr-4gwj-5jf2",
+              "severity": "moderate",
+              "affected": ">=5.0.0 <5.0.6"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.2"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": "<1.1.16"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=3.0.0 <5.0.7"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": "<1.1.17"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.3"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.8"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.9"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.4"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": "<1.1.18"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": "<1.1.21"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.1.7"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=4.0.0 <5.0.12"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": "<1.1.20"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.6"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.11"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": "<1.1.19"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.5"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.10"
+            }
+          ]
+        },
+        {
+          "name": "fast-xml-builder",
+          "severity": "high",
+          "paths": [
+            "node_modules/fast-xml-builder"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "fast-xml-builder allows attribute values with unwanted quotes to bypass malicious or unwanted attributes",
+              "url": "https://github.com/advisories/GHSA-5wm8-gmm8-39j9",
+              "severity": "high",
+              "affected": "<=1.1.6"
+            }
+          ]
+        },
+        {
+          "name": "fast-xml-parser",
+          "severity": "high",
+          "paths": [
+            "node_modules/fast-xml-parser"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "fast-xml-parser affected by numeric entity expansion bypassing all entity expansion limits (incomplete fix for CVE-2026-26278)",
+              "url": "https://github.com/advisories/GHSA-8gc5-j5rx-235r",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.5.6"
+            },
+            {
+              "title": "Entity Expansion Limits Bypassed When Set to Zero Due to JavaScript Falsy Evaluation in fast-xml-parser",
+              "url": "https://github.com/advisories/GHSA-jp2q-39xq-3w4g",
+              "severity": "moderate",
+              "affected": ">=5.0.0 <5.5.7"
+            },
+            {
+              "title": "fast-xml-parser XMLBuilder: XML Comment and CDATA Injection via Unescaped Delimiters",
+              "url": "https://github.com/advisories/GHSA-gh4j-gqv2-49f6",
+              "severity": "moderate",
+              "affected": "<5.7.0"
+            }
+          ]
+        },
+        {
+          "name": "lodash",
+          "severity": "high",
+          "paths": [
+            "node_modules/lodash"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "lodash vulnerable to Code Injection via `_.template` imports key names",
+              "url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc",
+              "severity": "high",
+              "affected": ">=4.0.0 <=4.17.23"
+            },
+            {
+              "title": "lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`",
+              "url": "https://github.com/advisories/GHSA-f23m-r3pf-42rh",
+              "severity": "moderate",
+              "affected": "<=4.17.23"
+            }
+          ]
+        },
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
+              "url": "https://github.com/advisories/GHSA-f269-vfmq-vjvj",
+              "severity": "high",
+              "affected": ">=6.0.0 <6.24.0"
+            },
+            {
+              "title": "Undici has an HTTP Request/Response Smuggling issue",
+              "url": "https://github.com/advisories/GHSA-2mjp-6q6p-2qxm",
+              "severity": "moderate",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
+              "url": "https://github.com/advisories/GHSA-vrm6-8vpv-qv8q",
+              "severity": "high",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
+              "url": "https://github.com/advisories/GHSA-v9p9-hfj2-hcw8",
+              "severity": "high",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has CRLF Injection in undici via `upgrade` option",
+              "url": "https://github.com/advisories/GHSA-4992-7rv2-5pvq",
+              "severity": "moderate",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "undici vulnerable to HTTP header injection via Set-Cookie percent-decoding",
+              "url": "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+              "severity": "moderate",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici WebSocket client vulnerable to denial of service via fragment count bypass",
+              "url": "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+              "severity": "high",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to Set-Cookie SameSite attribute downgrade via permissive substring matching",
+              "url": "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+              "url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+              "url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to HTTP response queue poisoning via keep-alive socket reuse",
+              "url": "https://github.com/advisories/GHSA-35p6-xmwp-9g52",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "actions/download-artifact",
+      "sha": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+      "packageMetadataVersion": "8.0.1",
+      "source": "https://github.com/actions/download-artifact/blob/3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/package-lock.json",
+      "direct": {
+        "@actions/artifact": {
+          "declared": "^6.2.1",
+          "actual": "6.2.1"
+        },
+        "@actions/core": {
+          "declared": "^3.0.0",
+          "actual": "3.0.0"
+        },
+        "minimatch": {
+          "declared": "^10.1.1",
+          "actual": "10.1.1"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/artifact",
+          "version": "6.2.1"
+        },
+        {
+          "path": "node_modules/@actions/core",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "9.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@azure/abort-controller",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/@azure/core-auth",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-client",
+          "version": "1.10.1"
+        },
+        {
+          "path": "node_modules/@azure/core-http-compat",
+          "version": "2.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-lro",
+          "version": "2.7.2"
+        },
+        {
+          "path": "node_modules/@azure/core-paging",
+          "version": "1.6.2"
+        },
+        {
+          "path": "node_modules/@azure/core-rest-pipeline",
+          "version": "1.22.2"
+        },
+        {
+          "path": "node_modules/@azure/core-tracing",
+          "version": "1.3.1"
+        },
+        {
+          "path": "node_modules/@azure/core-util",
+          "version": "1.13.1"
+        },
+        {
+          "path": "node_modules/@azure/core-xml",
+          "version": "1.5.0"
+        },
+        {
+          "path": "node_modules/@azure/logger",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-blob",
+          "version": "12.30.0"
+        },
+        {
+          "path": "node_modules/@azure/storage-common",
+          "version": "12.2.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protobuf",
+          "version": "2.11.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protoplugin",
+          "version": "2.11.0"
+        },
+        {
+          "path": "node_modules/@bufbuild/protoplugin/node_modules/typescript",
+          "version": "5.4.5"
+        },
+        {
+          "path": "node_modules/@isaacs/balanced-match",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/@isaacs/brace-expansion",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/@isaacs/cliui",
+          "version": "8.0.2"
+        },
+        {
+          "path": "node_modules/@isaacs/cliui/node_modules/ansi-regex",
+          "version": "6.2.2"
+        },
+        {
+          "path": "node_modules/@isaacs/cliui/node_modules/strip-ansi",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.2"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-request-log",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry",
+          "version": "8.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.7"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/@pkgjs/parseargs",
+          "version": "0.11.0"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/plugin/node_modules/typescript",
+          "version": "3.9.10"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/protoc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@protobuf-ts/runtime-rpc",
+          "version": "2.11.1"
+        },
+        {
+          "path": "node_modules/@typescript/vfs",
+          "version": "1.6.2"
+        },
+        {
+          "path": "node_modules/@typespec/ts-http-runtime",
+          "version": "0.3.2"
+        },
+        {
+          "path": "node_modules/abort-controller",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/agent-base",
+          "version": "7.1.4"
+        },
+        {
+          "path": "node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/ansi-styles",
+          "version": "4.3.0"
+        },
+        {
+          "path": "node_modules/archiver",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/archiver-utils",
+          "version": "5.0.2"
+        },
+        {
+          "path": "node_modules/async",
+          "version": "3.2.6"
+        },
+        {
+          "path": "node_modules/b4a",
+          "version": "1.7.3"
+        },
+        {
+          "path": "node_modules/balanced-match",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/bare-events",
+          "version": "2.8.2"
+        },
+        {
+          "path": "node_modules/base64-js",
+          "version": "1.5.1"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/binary",
+          "version": "0.3.0"
+        },
+        {
+          "path": "node_modules/bottleneck",
+          "version": "2.19.5"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/buffer",
+          "version": "6.0.3"
+        },
+        {
+          "path": "node_modules/buffer-crc32",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/buffers",
+          "version": "0.1.1"
+        },
+        {
+          "path": "node_modules/chainsaw",
+          "version": "0.1.0"
+        },
+        {
+          "path": "node_modules/color-convert",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/color-name",
+          "version": "1.1.4"
+        },
+        {
+          "path": "node_modules/compress-commons",
+          "version": "6.0.2"
+        },
+        {
+          "path": "node_modules/core-util-is",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/crc-32",
+          "version": "1.2.2"
+        },
+        {
+          "path": "node_modules/crc32-stream",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/cross-spawn",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/debug",
+          "version": "4.4.3"
+        },
+        {
+          "path": "node_modules/eastasianwidth",
+          "version": "0.2.0"
+        },
+        {
+          "path": "node_modules/emoji-regex",
+          "version": "9.2.2"
+        },
+        {
+          "path": "node_modules/event-target-shim",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/events",
+          "version": "3.3.0"
+        },
+        {
+          "path": "node_modules/events-universal",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/fast-content-type-parse",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/fast-fifo",
+          "version": "1.3.2"
+        },
+        {
+          "path": "node_modules/fast-xml-parser",
+          "version": "5.3.4"
+        },
+        {
+          "path": "node_modules/foreground-child",
+          "version": "3.3.1"
+        },
+        {
+          "path": "node_modules/glob",
+          "version": "10.5.0"
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "9.0.5"
+        },
+        {
+          "path": "node_modules/graceful-fs",
+          "version": "4.2.11"
+        },
+        {
+          "path": "node_modules/http-proxy-agent",
+          "version": "7.0.2"
+        },
+        {
+          "path": "node_modules/https-proxy-agent",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/ieee754",
+          "version": "1.2.1"
+        },
+        {
+          "path": "node_modules/inherits",
+          "version": "2.0.4"
+        },
+        {
+          "path": "node_modules/is-fullwidth-code-point",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/is-stream",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/isexe",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/jackspeak",
+          "version": "3.4.3"
+        },
+        {
+          "path": "node_modules/jwt-decode",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/lazystream",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/isarray",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/readable-stream",
+          "version": "2.3.8"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/safe-buffer",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/lazystream/node_modules/string_decoder",
+          "version": "1.1.1"
+        },
+        {
+          "path": "node_modules/lodash",
+          "version": "4.17.23"
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "10.1.1"
+        },
+        {
+          "path": "node_modules/minimist",
+          "version": "1.2.8"
+        },
+        {
+          "path": "node_modules/minipass",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/mkdirp",
+          "version": "0.5.6"
+        },
+        {
+          "path": "node_modules/ms",
+          "version": "2.1.3"
+        },
+        {
+          "path": "node_modules/normalize-path",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/package-json-from-dist",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/path-key",
+          "version": "3.1.1"
+        },
+        {
+          "path": "node_modules/path-scurry",
+          "version": "1.11.1"
+        },
+        {
+          "path": "node_modules/path-scurry/node_modules/lru-cache",
+          "version": "10.4.3"
+        },
+        {
+          "path": "node_modules/process",
+          "version": "0.11.10"
+        },
+        {
+          "path": "node_modules/process-nextick-args",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/readable-stream",
+          "version": "4.7.0"
+        },
+        {
+          "path": "node_modules/readdir-glob",
+          "version": "1.1.3"
+        },
+        {
+          "path": "node_modules/readdir-glob/node_modules/minimatch",
+          "version": "5.1.6"
+        },
+        {
+          "path": "node_modules/safe-buffer",
+          "version": "5.2.1"
+        },
+        {
+          "path": "node_modules/shebang-command",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/shebang-regex",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/signal-exit",
+          "version": "4.1.0"
+        },
+        {
+          "path": "node_modules/streamx",
+          "version": "2.23.0"
+        },
+        {
+          "path": "node_modules/string_decoder",
+          "version": "1.3.0"
+        },
+        {
+          "path": "node_modules/string-width",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/string-width-cjs",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/string-width/node_modules/ansi-regex",
+          "version": "6.2.2"
+        },
+        {
+          "path": "node_modules/string-width/node_modules/strip-ansi",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/strip-ansi",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strip-ansi-cjs",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strnum",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/tar-stream",
+          "version": "3.1.7"
+        },
+        {
+          "path": "node_modules/text-decoder",
+          "version": "1.2.3"
+        },
+        {
+          "path": "node_modules/traverse",
+          "version": "0.3.9"
+        },
+        {
+          "path": "node_modules/tslib",
+          "version": "2.8.1"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/typescript",
+          "version": "5.9.3"
+        },
+        {
+          "path": "node_modules/undici",
+          "version": "6.23.0"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/unzip-stream",
+          "version": "0.3.4"
+        },
+        {
+          "path": "node_modules/util-deprecate",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/which",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/wrap-ansi",
+          "version": "8.1.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs",
+          "version": "7.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/string-width",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/wrap-ansi/node_modules/ansi-regex",
+          "version": "6.2.2"
+        },
+        {
+          "path": "node_modules/wrap-ansi/node_modules/ansi-styles",
+          "version": "6.2.3"
+        },
+        {
+          "path": "node_modules/wrap-ansi/node_modules/strip-ansi",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/zip-stream",
+          "version": "6.0.1"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 5,
+        "critical": 1,
+        "total": 6
+      },
+      "findings": [
+        {
+          "name": "@isaacs/brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/@isaacs/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
+              "url": "https://github.com/advisories/GHSA-7h2j-956f-4vf2",
+              "severity": "high",
+              "affected": "<=5.0.0"
+            }
+          ]
+        },
+        {
+          "name": "brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+              "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.0.3"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.2"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.3"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.4"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.1.7"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.6"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.5"
+            }
+          ]
+        },
+        {
+          "name": "fast-xml-parser",
+          "severity": "critical",
+          "paths": [
+            "node_modules/fast-xml-parser"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "fast-xml-parser has an entity encoding bypass via regex injection in DOCTYPE entity names",
+              "url": "https://github.com/advisories/GHSA-m7jm-9gc2-mpf2",
+              "severity": "critical",
+              "affected": ">=5.0.0 <5.3.5"
+            },
+            {
+              "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
+              "url": "https://github.com/advisories/GHSA-jmr7-xgp7-cmfj",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.3.6"
+            },
+            {
+              "title": "fast-xml-parser has stack overflow in XMLBuilder with preserveOrder",
+              "url": "https://github.com/advisories/GHSA-fj3w-jwp8-x2g3",
+              "severity": "low",
+              "affected": ">=5.0.0 <5.3.8"
+            },
+            {
+              "title": "fast-xml-parser affected by numeric entity expansion bypassing all entity expansion limits (incomplete fix for CVE-2026-26278)",
+              "url": "https://github.com/advisories/GHSA-8gc5-j5rx-235r",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.5.6"
+            },
+            {
+              "title": "Entity Expansion Limits Bypassed When Set to Zero Due to JavaScript Falsy Evaluation in fast-xml-parser",
+              "url": "https://github.com/advisories/GHSA-jp2q-39xq-3w4g",
+              "severity": "moderate",
+              "affected": ">=5.0.0 <5.5.7"
+            },
+            {
+              "title": "fast-xml-parser XMLBuilder: XML Comment and CDATA Injection via Unescaped Delimiters",
+              "url": "https://github.com/advisories/GHSA-gh4j-gqv2-49f6",
+              "severity": "moderate",
+              "affected": "<5.7.0"
+            }
+          ]
+        },
+        {
+          "name": "lodash",
+          "severity": "high",
+          "paths": [
+            "node_modules/lodash"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "lodash vulnerable to Code Injection via `_.template` imports key names",
+              "url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc",
+              "severity": "high",
+              "affected": ">=4.0.0 <=4.17.23"
+            },
+            {
+              "title": "lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`",
+              "url": "https://github.com/advisories/GHSA-f23m-r3pf-42rh",
+              "severity": "moderate",
+              "affected": "<=4.17.23"
+            }
+          ]
+        },
+        {
+          "name": "minimatch",
+          "severity": "high",
+          "paths": [
+            "node_modules/glob/node_modules/minimatch",
+            "node_modules/minimatch",
+            "node_modules/readdir-glob/node_modules/minimatch"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+              "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.1.7"
+            },
+            {
+              "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+              "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+              "severity": "high",
+              "affected": ">=9.0.0 <9.0.6"
+            },
+            {
+              "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+              "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+              "severity": "high",
+              "affected": ">=10.0.0 <10.2.1"
+            },
+            {
+              "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+              "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.1.8"
+            },
+            {
+              "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+              "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+              "severity": "high",
+              "affected": ">=9.0.0 <9.0.7"
+            },
+            {
+              "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+              "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+              "severity": "high",
+              "affected": ">=10.0.0 <10.2.3"
+            },
+            {
+              "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+              "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+              "severity": "high",
+              "affected": ">=5.0.0 <5.1.8"
+            },
+            {
+              "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+              "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+              "severity": "high",
+              "affected": ">=9.0.0 <9.0.7"
+            },
+            {
+              "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+              "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+              "severity": "high",
+              "affected": ">=10.0.0 <10.2.3"
+            }
+          ]
+        },
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
+              "url": "https://github.com/advisories/GHSA-f269-vfmq-vjvj",
+              "severity": "high",
+              "affected": ">=6.0.0 <6.24.0"
+            },
+            {
+              "title": "Undici has an HTTP Request/Response Smuggling issue",
+              "url": "https://github.com/advisories/GHSA-2mjp-6q6p-2qxm",
+              "severity": "moderate",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
+              "url": "https://github.com/advisories/GHSA-vrm6-8vpv-qv8q",
+              "severity": "high",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
+              "url": "https://github.com/advisories/GHSA-v9p9-hfj2-hcw8",
+              "severity": "high",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "Undici has CRLF Injection in undici via `upgrade` option",
+              "url": "https://github.com/advisories/GHSA-4992-7rv2-5pvq",
+              "severity": "moderate",
+              "affected": "<6.24.0"
+            },
+            {
+              "title": "undici vulnerable to HTTP header injection via Set-Cookie percent-decoding",
+              "url": "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+              "severity": "moderate",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici WebSocket client vulnerable to denial of service via fragment count bypass",
+              "url": "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+              "severity": "high",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to Set-Cookie SameSite attribute downgrade via permissive substring matching",
+              "url": "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+              "url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+              "url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to HTTP response queue poisoning via keep-alive socket reuse",
+              "url": "https://github.com/advisories/GHSA-35p6-xmwp-9g52",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "actions/attest",
+      "sha": "508db95dd578ae2727ebd6217d5ba78e4fbda05d",
+      "packageMetadataVersion": "4.1.0",
+      "source": "https://github.com/actions/attest/blob/508db95dd578ae2727ebd6217d5ba78e4fbda05d/package-lock.json",
+      "direct": {
+        "@actions/attest": {
+          "declared": "^3.2.0",
+          "actual": "3.2.0"
+        },
+        "@actions/core": {
+          "declared": "^3.0.1",
+          "actual": "3.0.1"
+        },
+        "@actions/github": {
+          "declared": "^9.1.1",
+          "actual": "9.1.1"
+        },
+        "@actions/glob": {
+          "declared": "^0.7.0",
+          "actual": "0.7.0"
+        },
+        "@sigstore/oci": {
+          "declared": "^0.7.1",
+          "actual": "0.7.1"
+        },
+        "csv-parse": {
+          "declared": "^7.0.1",
+          "actual": "7.0.1"
+        }
+      },
+      "dependencies": [
+        {
+          "path": "node_modules/@actions/attest",
+          "version": "3.2.0"
+        },
+        {
+          "path": "node_modules/@actions/core",
+          "version": "3.0.1"
+        },
+        {
+          "path": "node_modules/@actions/exec",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@actions/github",
+          "version": "9.1.1"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/@actions/http-client",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@actions/github/node_modules/undici",
+          "version": "6.25.0"
+        },
+        {
+          "path": "node_modules/@actions/glob",
+          "version": "0.7.0"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/brace-expansion",
+          "version": "5.0.7"
+        },
+        {
+          "path": "node_modules/@actions/glob/node_modules/minimatch",
+          "version": "10.2.5"
+        },
+        {
+          "path": "node_modules/@actions/http-client",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@actions/http-client/node_modules/undici",
+          "version": "6.25.0"
+        },
+        {
+          "path": "node_modules/@actions/io",
+          "version": "3.0.2"
+        },
+        {
+          "path": "node_modules/@gar/promise-retry",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/@isaacs/cliui",
+          "version": "8.0.2"
+        },
+        {
+          "path": "node_modules/@isaacs/fs-minipass",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/@npmcli/agent",
+          "version": "5.0.2"
+        },
+        {
+          "path": "node_modules/@npmcli/agent/node_modules/agent-base",
+          "version": "9.0.0"
+        },
+        {
+          "path": "node_modules/@npmcli/agent/node_modules/http-proxy-agent",
+          "version": "9.1.0"
+        },
+        {
+          "path": "node_modules/@npmcli/agent/node_modules/https-proxy-agent",
+          "version": "9.1.0"
+        },
+        {
+          "path": "node_modules/@npmcli/agent/node_modules/lru-cache",
+          "version": "11.5.1"
+        },
+        {
+          "path": "node_modules/@npmcli/agent/node_modules/socks-proxy-agent",
+          "version": "10.1.0"
+        },
+        {
+          "path": "node_modules/@npmcli/fs",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@npmcli/fs/node_modules/semver",
+          "version": "7.8.5"
+        },
+        {
+          "path": "node_modules/@npmcli/redact",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/auth-token",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/core",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/@octokit/endpoint",
+          "version": "11.0.2"
+        },
+        {
+          "path": "node_modules/@octokit/graphql",
+          "version": "9.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/openapi-types",
+          "version": "27.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-paginate-rest",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-rest-endpoint-methods",
+          "version": "17.0.0"
+        },
+        {
+          "path": "node_modules/@octokit/plugin-retry",
+          "version": "8.0.3"
+        },
+        {
+          "path": "node_modules/@octokit/request",
+          "version": "10.0.7"
+        },
+        {
+          "path": "node_modules/@octokit/request-error",
+          "version": "7.1.0"
+        },
+        {
+          "path": "node_modules/@octokit/types",
+          "version": "16.0.0"
+        },
+        {
+          "path": "node_modules/@pkgjs/parseargs",
+          "version": "0.11.0"
+        },
+        {
+          "path": "node_modules/@sigstore/bundle",
+          "version": "3.1.0"
+        },
+        {
+          "path": "node_modules/@sigstore/core",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/oci",
+          "version": "0.7.1"
+        },
+        {
+          "path": "node_modules/@sigstore/oci/node_modules/proc-log",
+          "version": "7.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/protobuf-specs",
+          "version": "0.4.3"
+        },
+        {
+          "path": "node_modules/@sigstore/sign",
+          "version": "3.1.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/@npmcli/agent",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/@npmcli/fs",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/cacache",
+          "version": "19.0.1"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/lru-cache",
+          "version": "10.4.3"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/make-fetch-happen",
+          "version": "14.0.3"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/minipass-fetch",
+          "version": "4.0.1"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/minipass-sized",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/minipass-sized/node_modules/minipass",
+          "version": "3.3.6"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/semver",
+          "version": "7.7.4"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/ssri",
+          "version": "12.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/unique-filename",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/unique-slug",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/@sigstore/sign/node_modules/yallist",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/agent-base",
+          "version": "7.1.4"
+        },
+        {
+          "path": "node_modules/ansi-regex",
+          "version": "6.2.2"
+        },
+        {
+          "path": "node_modules/ansi-styles",
+          "version": "4.3.0"
+        },
+        {
+          "path": "node_modules/balanced-match",
+          "version": "1.0.2"
+        },
+        {
+          "path": "node_modules/before-after-hook",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/bottleneck",
+          "version": "2.19.5"
+        },
+        {
+          "path": "node_modules/cacache",
+          "version": "21.0.1"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/balanced-match",
+          "version": "4.0.4"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/brace-expansion",
+          "version": "5.0.6"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/glob",
+          "version": "13.0.6"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/lru-cache",
+          "version": "11.5.1"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/minimatch",
+          "version": "10.2.5"
+        },
+        {
+          "path": "node_modules/cacache/node_modules/path-scurry",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/chownr",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/color-convert",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/color-name",
+          "version": "1.1.4"
+        },
+        {
+          "path": "node_modules/cross-spawn",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/csv-parse",
+          "version": "7.0.1"
+        },
+        {
+          "path": "node_modules/debug",
+          "version": "4.4.3"
+        },
+        {
+          "path": "node_modules/eastasianwidth",
+          "version": "0.2.0"
+        },
+        {
+          "path": "node_modules/emoji-regex",
+          "version": "9.2.2"
+        },
+        {
+          "path": "node_modules/encoding",
+          "version": "0.1.13"
+        },
+        {
+          "path": "node_modules/err-code",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/fast-content-type-parse",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/foreground-child",
+          "version": "3.3.1"
+        },
+        {
+          "path": "node_modules/fs-minipass",
+          "version": "3.0.3"
+        },
+        {
+          "path": "node_modules/glob",
+          "version": "10.5.0"
+        },
+        {
+          "path": "node_modules/glob/node_modules/brace-expansion",
+          "version": "2.1.0"
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "9.0.9"
+        },
+        {
+          "path": "node_modules/http-cache-semantics",
+          "version": "4.2.0"
+        },
+        {
+          "path": "node_modules/http-proxy-agent",
+          "version": "7.0.2"
+        },
+        {
+          "path": "node_modules/https-proxy-agent",
+          "version": "7.0.6"
+        },
+        {
+          "path": "node_modules/iconv-lite",
+          "version": "0.6.3"
+        },
+        {
+          "path": "node_modules/imurmurhash",
+          "version": "0.1.4"
+        },
+        {
+          "path": "node_modules/ip-address",
+          "version": "10.2.0"
+        },
+        {
+          "path": "node_modules/is-fullwidth-code-point",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/isexe",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/jackspeak",
+          "version": "3.4.3"
+        },
+        {
+          "path": "node_modules/jose",
+          "version": "5.10.0"
+        },
+        {
+          "path": "node_modules/make-fetch-happen",
+          "version": "16.0.1"
+        },
+        {
+          "path": "node_modules/make-fetch-happen/node_modules/proc-log",
+          "version": "7.0.0"
+        },
+        {
+          "path": "node_modules/minipass",
+          "version": "7.1.3"
+        },
+        {
+          "path": "node_modules/minipass-collect",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/minipass-fetch",
+          "version": "6.0.0"
+        },
+        {
+          "path": "node_modules/minipass-fetch/node_modules/iconv-lite",
+          "version": "0.7.2"
+        },
+        {
+          "path": "node_modules/minipass-flush",
+          "version": "1.0.5"
+        },
+        {
+          "path": "node_modules/minipass-flush/node_modules/minipass",
+          "version": "3.3.6"
+        },
+        {
+          "path": "node_modules/minipass-flush/node_modules/yallist",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/minipass-pipeline",
+          "version": "1.2.4"
+        },
+        {
+          "path": "node_modules/minipass-pipeline/node_modules/minipass",
+          "version": "3.3.6"
+        },
+        {
+          "path": "node_modules/minipass-pipeline/node_modules/yallist",
+          "version": "4.0.0"
+        },
+        {
+          "path": "node_modules/minipass-sized",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/minizlib",
+          "version": "3.1.0"
+        },
+        {
+          "path": "node_modules/ms",
+          "version": "2.1.3"
+        },
+        {
+          "path": "node_modules/negotiator",
+          "version": "1.0.0"
+        },
+        {
+          "path": "node_modules/p-map",
+          "version": "7.0.4"
+        },
+        {
+          "path": "node_modules/package-json-from-dist",
+          "version": "1.0.1"
+        },
+        {
+          "path": "node_modules/path-key",
+          "version": "3.1.1"
+        },
+        {
+          "path": "node_modules/path-scurry",
+          "version": "1.11.1"
+        },
+        {
+          "path": "node_modules/path-scurry/node_modules/lru-cache",
+          "version": "10.4.3"
+        },
+        {
+          "path": "node_modules/proc-log",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/promise-retry",
+          "version": "2.0.1"
+        },
+        {
+          "path": "node_modules/proxy-agent-negotiate",
+          "version": "1.1.0"
+        },
+        {
+          "path": "node_modules/retry",
+          "version": "0.12.0"
+        },
+        {
+          "path": "node_modules/safer-buffer",
+          "version": "2.1.2"
+        },
+        {
+          "path": "node_modules/shebang-command",
+          "version": "2.0.0"
+        },
+        {
+          "path": "node_modules/shebang-regex",
+          "version": "3.0.0"
+        },
+        {
+          "path": "node_modules/signal-exit",
+          "version": "4.1.0"
+        },
+        {
+          "path": "node_modules/smart-buffer",
+          "version": "4.2.0"
+        },
+        {
+          "path": "node_modules/socks",
+          "version": "2.8.7"
+        },
+        {
+          "path": "node_modules/socks-proxy-agent",
+          "version": "8.0.5"
+        },
+        {
+          "path": "node_modules/ssri",
+          "version": "14.0.0"
+        },
+        {
+          "path": "node_modules/string-width",
+          "version": "5.1.2"
+        },
+        {
+          "path": "node_modules/string-width-cjs",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/string-width-cjs/node_modules/strip-ansi",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strip-ansi",
+          "version": "7.1.2"
+        },
+        {
+          "path": "node_modules/strip-ansi-cjs",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/strip-ansi-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/tar",
+          "version": "7.5.21"
+        },
+        {
+          "path": "node_modules/tar/node_modules/yallist",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/tunnel",
+          "version": "0.0.6"
+        },
+        {
+          "path": "node_modules/universal-user-agent",
+          "version": "7.0.3"
+        },
+        {
+          "path": "node_modules/which",
+          "version": "2.0.2"
+        },
+        {
+          "path": "node_modules/wrap-ansi",
+          "version": "8.1.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs",
+          "version": "7.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/ansi-regex",
+          "version": "5.0.1"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/emoji-regex",
+          "version": "8.0.0"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/string-width",
+          "version": "4.2.3"
+        },
+        {
+          "path": "node_modules/wrap-ansi-cjs/node_modules/strip-ansi",
+          "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/wrap-ansi/node_modules/ansi-styles",
+          "version": "6.2.3"
+        }
+      ],
+      "auditCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 4,
+        "high": 3,
+        "critical": 0,
+        "total": 7
+      },
+      "findings": [
+        {
+          "name": "@actions/attest",
+          "severity": "moderate",
+          "paths": [
+            "node_modules/@actions/attest"
+          ],
+          "fixAvailable": false,
+          "advisories": []
+        },
+        {
+          "name": "@sigstore/core",
+          "severity": "moderate",
+          "paths": [
+            "node_modules/@sigstore/core"
+          ],
+          "fixAvailable": false,
+          "advisories": [
+            {
+              "title": "@sigstore/core has DSSE payloadType type-binding failure",
+              "url": "https://github.com/advisories/GHSA-jfc7-64v2-mr8c",
+              "severity": "moderate",
+              "affected": "<=3.2.0"
+            }
+          ]
+        },
+        {
+          "name": "@sigstore/sign",
+          "severity": "moderate",
+          "paths": [
+            "node_modules/@sigstore/sign"
+          ],
+          "fixAvailable": false,
+          "advisories": []
+        },
+        {
+          "name": "brace-expansion",
+          "severity": "high",
+          "paths": [
+            "node_modules/@actions/glob/node_modules/brace-expansion",
+            "node_modules/cacache/node_modules/brace-expansion",
+            "node_modules/glob/node_modules/brace-expansion"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.2"
+            },
+            {
+              "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+              "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+              "severity": "high",
+              "affected": ">=3.0.0 <5.0.7"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.3"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+              "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.8"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.9"
+            },
+            {
+              "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+              "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.4"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=2.0.0 <2.1.7"
+            },
+            {
+              "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+              "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+              "severity": "moderate",
+              "affected": ">=4.0.0 <5.0.12"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.6"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.11"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=2.0.0 <2.1.5"
+            },
+            {
+              "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+              "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+              "severity": "high",
+              "affected": ">=4.0.0 <5.0.10"
+            }
+          ]
+        },
+        {
+          "name": "csv-parse",
+          "severity": "moderate",
+          "paths": [
+            "node_modules/csv-parse"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "node-csv: Prototype replacement still reachable via columns path",
+              "url": "https://github.com/advisories/GHSA-8cw4-87c7-c6xx",
+              "severity": "moderate",
+              "affected": "<7.0.2"
+            }
+          ]
+        },
+        {
+          "name": "ip-address",
+          "severity": "high",
+          "paths": [
+            "node_modules/ip-address"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "ip-address: Address4 decodes leading-zero octets as decimal while resolvers decode them as octal, allowing SSRF and trust-boundary bypass",
+              "url": "https://github.com/advisories/GHSA-mwp4-54f8-5fhr",
+              "severity": "high",
+              "affected": "<=10.3.0"
+            },
+            {
+              "title": "ip-address: a CIDR suffix on the parsed address suppresses special-use classification and can bypass SSRF and trust-boundary checks",
+              "url": "https://github.com/advisories/GHSA-4xrf-jv44-h6hh",
+              "severity": "moderate",
+              "affected": ">=10.1.1 <=10.2.1"
+            },
+            {
+              "title": "ip-address: misclassification of IPv4-mapped/NAT64 IPv6 addresses can bypass SSRF and trust-boundary checks",
+              "url": "https://github.com/advisories/GHSA-22jq-vg5j-6vgg",
+              "severity": "moderate",
+              "affected": ">=10.1.1 <=10.2.0"
+            },
+            {
+              "title": "ip-address: Address6.isLinkLocal() recognizes fe80::/64 rather than fe80::/10, allowing SSRF and trust-boundary bypass to on-link hosts",
+              "url": "https://github.com/advisories/GHSA-rpw4-54j3-4h4q",
+              "severity": "moderate",
+              "affected": "<=10.5.0"
+            },
+            {
+              "title": "ip-address: no classifier recognizes the NAT64 local-use range 64:ff9b:1::/48, allowing SSRF and trust-boundary bypass",
+              "url": "https://github.com/advisories/GHSA-2vr4-cq9g-pvrc",
+              "severity": "moderate",
+              "affected": ">=10.2.0 <=10.5.0"
+            },
+            {
+              "title": "ip-address: isInSubnet() and isHostInSubnet() compare addresses of different families as if they shared an address space, allowing an allowlist check to admit an address outside its range",
+              "url": "https://github.com/advisories/GHSA-j6r3-76f7-8jcv",
+              "severity": "moderate",
+              "affected": "<=10.7.0"
+            },
+            {
+              "title": "ip-address: Address6 builds a parse diagnostic proportional to the input with no length bound, allowing a single long string to stall or crash the process",
+              "url": "https://github.com/advisories/GHSA-h3mg-xc3c-68pw",
+              "severity": "moderate",
+              "affected": "<=10.7.0"
+            }
+          ]
+        },
+        {
+          "name": "undici",
+          "severity": "high",
+          "paths": [
+            "node_modules/@actions/github/node_modules/undici",
+            "node_modules/@actions/http-client/node_modules/undici"
+          ],
+          "fixAvailable": true,
+          "advisories": [
+            {
+              "title": "undici vulnerable to HTTP header injection via Set-Cookie percent-decoding",
+              "url": "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+              "severity": "moderate",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici WebSocket client vulnerable to denial of service via fragment count bypass",
+              "url": "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+              "severity": "high",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to Set-Cookie SameSite attribute downgrade via permissive substring matching",
+              "url": "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+              "url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+              "url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+              "severity": "moderate",
+              "affected": "<6.28.0"
+            },
+            {
+              "title": "undici vulnerable to HTTP response queue poisoning via keep-alive socket reuse",
+              "url": "https://github.com/advisories/GHSA-35p6-xmwp-9g52",
+              "severity": "low",
+              "affected": "<6.27.0"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+              "url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+              "severity": "moderate",
+              "affected": ">=6.25.0 <6.28.1"
+            },
+            {
+              "title": "undici vulnerable to downstream response splitting via retry interceptor",
+              "url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+              "severity": "low",
+              "affected": "<6.28.1"
+            },
+            {
+              "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+              "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+              "severity": "high",
+              "affected": ">=6.7.0 <6.28.1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

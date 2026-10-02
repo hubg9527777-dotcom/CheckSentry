@@ -23,6 +23,11 @@ function Expand-RegistryPathValue {
     return [Environment]::ExpandEnvironmentVariables($text)
 }
 
+function Test-LocalSoftwareIconPath {
+    param([string]$Path)
+    return (-not [string]::IsNullOrWhiteSpace($Path) -and $Path -notmatch '^(?:\\\\|//|[A-Za-z][A-Za-z0-9+.-]*://)')
+}
+
 function New-SoftwareIconReference {
     param(
         [string]$Path,
@@ -52,6 +57,7 @@ function Resolve-DisplayIconReference {
     }
 
     $candidate = $candidate.Trim().Trim('"')
+    if (-not (Test-LocalSoftwareIconPath -Path $candidate)) { return $null }
     if (Test-Path -LiteralPath $candidate -PathType Leaf) {
         $item = Get-Item -LiteralPath $candidate -ErrorAction SilentlyContinue
         if ($null -ne $item) { return New-SoftwareIconReference -Path $item.FullName -Index $iconIndex -Source 'DisplayIcon' }
@@ -67,6 +73,7 @@ function Resolve-InstallLocationIconReference {
     )
     if ([string]::IsNullOrWhiteSpace($InstallLocation)) { return $null }
     $base = (Expand-RegistryPathValue -Value $InstallLocation).Trim().Trim('"')
+    if (-not (Test-LocalSoftwareIconPath -Path $base)) { return $null }
     if (-not (Test-Path -LiteralPath $base -PathType Container)) { return $null }
 
     $candidates = @()
@@ -122,6 +129,7 @@ function Resolve-UninstallStringIconReference {
     if ([string]::IsNullOrWhiteSpace($candidate)) { return $null }
 
     $candidate = $candidate.Trim().Trim('"')
+    if (-not (Test-LocalSoftwareIconPath -Path $candidate)) { return $null }
     if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { return $null }
     $item = Get-Item -LiteralPath $candidate -ErrorAction SilentlyContinue
     if ($null -eq $item) { return $null }
@@ -169,7 +177,8 @@ using System.Text;
 
 namespace CheckSentry {
     public static class MsiProductInfo {
-        [DllImport("msi.dll", CharSet = CharSet.Unicode)]
+        [DllImport("msi.dll", EntryPoint = "MsiGetProductInfoW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern uint MsiGetProductInfo(
             string productCode,
             string property,
@@ -240,7 +249,7 @@ function Get-StartMenuIconCatalog {
                 try {
                     $shortcut = $shell.CreateShortcut($linkFile.FullName)
                     $targetPath = (Expand-RegistryPathValue -Value $shortcut.TargetPath).Trim().Trim('"')
-                    if ([string]::IsNullOrWhiteSpace($targetPath) -or -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) { continue }
+                    if (-not (Test-LocalSoftwareIconPath -Path $targetPath) -or -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) { continue }
 
                     $iconReference = Resolve-DisplayIconReference -DisplayIcon $shortcut.IconLocation
                     if ($null -eq $iconReference) {

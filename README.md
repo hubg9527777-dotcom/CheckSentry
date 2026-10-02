@@ -190,7 +190,7 @@ GitHub Actions 会在同一个任务中完成源文件校验、PowerShell 5.1/7 
 - 下载 ZIP 后执行：
 
 ```bash
-gh attestation verify CheckSentry-v1.0.1.zip --repo secure-artifacts/CheckSentry
+gh attestation verify CheckSentry-1.1.4-win-x64.zip --repo hubg9527777-dotcom/CheckSentry
 ```
 
 ### 版本号说明

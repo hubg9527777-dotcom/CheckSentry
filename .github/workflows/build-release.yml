@@ -17,8 +17,10 @@ jobs:
       packages: read
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: '8.0.x'
       - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
@@ -39,13 +41,21 @@ jobs:
       matrix:
         runtime: [win-x64]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: '8.0.x'
       - name: Run PowerShell tests
         shell: pwsh
         run: .\tests\Run-Tests.ps1
+      - name: Run Windows PowerShell compatibility tests
+        shell: powershell
+        run: .\tests\Run-Tests.ps1
+      - name: Verify automatic browser session
+        shell: pwsh
+        run: node .\tests\check-session.js pwsh
       - name: Build and sign
         shell: pwsh
         env:
@@ -60,10 +70,14 @@ jobs:
             $certificatePath = Join-Path $env:RUNNER_TEMP 'checksentry-signing.pfx'
             [IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($env:SIGNING_CERT_BASE64))
           }
-          .\Build-Release.ps1 -Version $version -Runtime '${{ matrix.runtime }}' -CertificatePath $certificatePath -CertificatePassword $env:SIGNING_CERT_PASSWORD -OutputDirectory (Join-Path $PWD ('dist-${{ matrix.runtime }}'))
-          if ($certificatePath -and (Test-Path $certificatePath)) { Remove-Item $certificatePath -Force }
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+          try {
+            .\Build-Release.ps1 -Version $version -Runtime '${{ matrix.runtime }}' -CertificatePath $certificatePath -CertificatePassword $env:SIGNING_CERT_PASSWORD -OutputDirectory (Join-Path $PWD ('dist-${{ matrix.runtime }}'))
+          } finally {
+            if ($certificatePath -and (Test-Path $certificatePath)) { Remove-Item -LiteralPath $certificatePath -Force }
+          }
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: CheckSentry-${{ matrix.runtime }}
           path: dist-${{ matrix.runtime }}/*.zip*
 
@@ -76,11 +90,11 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: release
           merge-multiple: true
-      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: 'release/*.zip'
       - name: Publish release

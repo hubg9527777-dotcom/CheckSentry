@@ -15,8 +15,8 @@ param(
 )
 
 $script:Utf8ConsoleEncoding = New-Object System.Text.UTF8Encoding($false)
-try { [Console]::InputEncoding = $script:Utf8ConsoleEncoding } catch {}
-try { [Console]::OutputEncoding = $script:Utf8ConsoleEncoding } catch {}
+try { [Console]::InputEncoding = $script:Utf8ConsoleEncoding } catch { [Diagnostics.Trace]::WriteLine("配置输入编码失败：$($_.Exception)") }
+try { [Console]::OutputEncoding = $script:Utf8ConsoleEncoding } catch { [Diagnostics.Trace]::WriteLine("配置输出编码失败：$($_.Exception)") }
 $global:OutputEncoding = $script:Utf8ConsoleEncoding
 
 $ErrorActionPreference = 'Stop'
@@ -65,12 +65,17 @@ function Initialize-ImportExcel {
             [object[]]$integrityEntries = $parsedIntegrityEntries
             if ($integrityEntries.Count -lt 1 -or $integrityEntries.Count -gt 2000) { throw '模块完整性清单数量无效。' }
             $moduleRootPrefix = [System.IO.Path]::GetFullPath($moduleRoot).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+            $verifiedPaths = @{}
             foreach ($entry in $integrityEntries) {
                 $candidate = [System.IO.Path]::GetFullPath((Join-Path $moduleRoot ([string]$entry.path)))
                 if (-not $candidate.StartsWith($moduleRootPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { throw '模块完整性清单包含越界路径。' }
                 if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { throw "模块文件缺失：$($entry.path)" }
                 $actualHash = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256 -ErrorAction Stop).Hash
                 if (-not [string]::Equals($actualHash, [string]$entry.sha256, [System.StringComparison]::OrdinalIgnoreCase)) { throw "模块文件校验失败：$($entry.path)" }
+                $verifiedPaths[$candidate] = $true
+            }
+            foreach ($moduleFile in @(Get-ChildItem -LiteralPath $moduleRoot -Recurse -File)) {
+                if ($moduleFile.Extension -in @('.ps1','.psm1','.psd1','.dll') -and -not $verifiedPaths.ContainsKey($moduleFile.FullName)) { throw "模块包含未经校验的可执行文件：$($moduleFile.Name)" }
             }
             Import-Module $bundledManifest -Force -ErrorAction Stop
             foreach ($commandName in @('Open-ExcelPackage', 'Close-ExcelPackage')) {
@@ -480,8 +485,14 @@ function Test-WorkbookXmlNamespace {
                 $stream = $entry.Open()
                 $reader = New-Object System.IO.StreamReader($stream)
                 $document = New-Object System.Xml.XmlDocument
+                $document.XmlResolver = $null
                 $document.PreserveWhitespace = $false
-                $document.Load($reader)
+                $settings = New-Object System.Xml.XmlReaderSettings
+                $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+                $settings.XmlResolver = $null
+                $settings.MaxCharactersInDocument = 104857600
+                $xmlReader = [System.Xml.XmlReader]::Create($reader, $settings)
+                try { $document.Load($xmlReader) } finally { $xmlReader.Dispose() }
                 $sheetDataNodes = @($document.SelectNodes("//*[local-name()='sheetData']"))
                 if ($sheetDataNodes.Count -ne 1) { return $false }
                 foreach ($node in $sheetDataNodes) {
@@ -507,6 +518,7 @@ function Test-WorkbookXmlNamespace {
 
 function Normalize-WorkbookXmlNamespace {
     param([string]$Path)
+    Assert-XlsxArchiveComplete -Path $Path -SkipXmlValidation
     $mainNamespace = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
     $directory = [System.IO.Path]::GetDirectoryName($Path)
     $temporaryPath = Join-Path $directory ('.' + [System.IO.Path]::GetFileName($Path) + '.' + [guid]::NewGuid().ToString('N') + '.normalized.xlsx')
@@ -535,8 +547,15 @@ function Normalize-WorkbookXmlNamespace {
                         $xmlText = $xmlText -replace '(?s)<legacyDrawing[^>]*r:id[^>]*>', ''
                         $xmlText = $xmlText -replace '(?s)<drawing[^>]*r:id[^>]*>', ''
                         $document = New-Object System.Xml.XmlDocument
+                        $document.XmlResolver = $null
                         $document.PreserveWhitespace = $true
-                        $document.LoadXml($xmlText)
+                        $settings = New-Object System.Xml.XmlReaderSettings
+                        $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+                        $settings.XmlResolver = $null
+                        $settings.MaxCharactersInDocument = 104857600
+                        $textReader = New-Object System.IO.StringReader($xmlText)
+                        $xmlReader = [System.Xml.XmlReader]::Create($textReader, $settings)
+                        try { $document.Load($xmlReader) } finally { $xmlReader.Dispose(); $textReader.Dispose() }
                         $root = $document.DocumentElement
                         if ($null -eq $root -or $root.LocalName -ne 'worksheet') {
                             throw "工作表 XML 根节点无效：$($sourceEntry.FullName)"
@@ -618,11 +637,13 @@ function Repair-WorkbookFile {
 
 function Ensure-WorkbookCompatibility {
     param([string]$Path)
+    Assert-XlsxArchiveComplete -Path $Path -SkipXmlValidation
     if (-not (Test-WorkbookXmlNamespace -Path $Path)) {
         Write-Host "检测到清单存在非标准 XLSX 工作表结构，正在安全重建：$Path" -ForegroundColor Yellow
         Repair-WorkbookFile -Path $Path
         Write-Host "清单已重建为兼容 Excel 和 LibreOffice 的标准 XLSX：$Path" -ForegroundColor Green
     }
+    Assert-XlsxArchiveComplete -Path $Path
 }
 
 function Convert-WorksheetToRules {
@@ -656,6 +677,7 @@ function Convert-WorksheetToRules {
 
 function Import-RuleSheet {
     param([string]$Path, [string]$SheetName)
+    Assert-XlsxArchiveComplete -Path $Path
     $null = Assert-AllowedSheet -SheetName $SheetName
     $lastError = $null
     for ($attempt = 1; $attempt -le 3; $attempt++) {
@@ -676,6 +698,7 @@ function Import-RuleSheet {
 
 function Import-AllRuleSheets {
     param([string]$Path)
+    Assert-XlsxArchiveComplete -Path $Path
     $lastError = $null
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         $package = $null
@@ -864,7 +887,7 @@ function Enter-WorkbookMutex {
 function Exit-WorkbookMutex {
     param($Mutex)
     if ($null -eq $Mutex) { return }
-    try { $Mutex.ReleaseMutex() } catch {}
+    try { $Mutex.ReleaseMutex() } catch { Write-Verbose "释放工作簿锁失败：$($_.Exception.Message)" }
     $Mutex.Dispose()
 }
 
@@ -1218,7 +1241,7 @@ function Get-GoogleSheetsExportUrl {
     if ([string]::IsNullOrWhiteSpace($text) -or $text.Length -gt 2048) { throw 'Google Sheets 链接不能为空且不能超过 2048 个字符。' }
     $uri = $null
     if (-not [Uri]::TryCreate($text, [UriKind]::Absolute, [ref]$uri)) { throw 'Google Sheets 链接格式无效。' }
-    if ($uri.Scheme -ne 'https' -or $uri.Host -ne 'docs.google.com') { throw '只允许使用 https://docs.google.com/spreadsheets/d/... 链接。' }
+    if ($uri.Scheme -ne 'https' -or $uri.Host -ne 'docs.google.com' -or $uri.Port -ne 443 -or $uri.UserInfo -ne '') { throw '只允许使用 https://docs.google.com/spreadsheets/d/... 链接。' }
     $match = [regex]::Match($uri.AbsolutePath, '^/spreadsheets/d/([A-Za-z0-9_-]{10,200})(?:/|$)')
     if (-not $match.Success) { throw '链接不是有效的 Google Sheets 表格链接。' }
     $spreadsheetId = $match.Groups[1].Value
@@ -1226,29 +1249,54 @@ function Get-GoogleSheetsExportUrl {
 }
 
 function Assert-XlsxArchiveComplete {
-    param([string]$Path)
+    param([string]$Path, [switch]$SkipXmlValidation)
     Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue
     Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
     $stream = $null
     $archive = $null
     try {
         $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+        if ($stream.Length -gt 104857600) { throw 'XLSX 文件超过 100 MB 安全限制。' }
         $archive = New-Object System.IO.Compression.ZipArchive($stream, [System.IO.Compression.ZipArchiveMode]::Read, $false)
         $requiredEntries = @('[Content_Types].xml', 'xl/workbook.xml')
         foreach ($required in $requiredEntries) {
             if ($null -eq $archive.GetEntry($required)) { throw "XLSX 缺少必要文件：$required" }
         }
+        if ($archive.Entries.Count -gt 10000) { throw 'XLSX 文件条目过多。' }
         $expandedBytes = [int64]0
+        $actualBytes = [int64]0
+        $entryNames = @{}
         $buffer = New-Object byte[] 65536
         foreach ($entry in $archive.Entries) {
+            if ($entryNames.ContainsKey($entry.FullName)) { throw 'XLSX 包含重复文件条目。' }
+            $entryNames[$entry.FullName] = $true
             $expandedBytes += [int64]$entry.Length
             if ($expandedBytes -gt 104857600) { throw 'XLSX 解压后超过 100 MB 安全限制。' }
             $entryStream = $null
             try {
                 $entryStream = $entry.Open()
-                while ($entryStream.Read($buffer, 0, $buffer.Length) -gt 0) {}
+                while (($read = $entryStream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+                    $actualBytes += $read
+                    if ($actualBytes -gt 104857600) { throw 'XLSX 实际解压数据超过 100 MB 安全限制。' }
+                }
             } finally {
                 if ($null -ne $entryStream) { $entryStream.Dispose() }
+            }
+            if (-not $SkipXmlValidation -and ($entry.FullName.EndsWith('.xml', [StringComparison]::OrdinalIgnoreCase) -or $entry.FullName.EndsWith('.rels', [StringComparison]::OrdinalIgnoreCase))) {
+                $xmlStream = $null
+                $xmlReader = $null
+                try {
+                    $xmlStream = $entry.Open()
+                    $settings = New-Object System.Xml.XmlReaderSettings
+                    $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+                    $settings.XmlResolver = $null
+                    $settings.MaxCharactersInDocument = 104857600
+                    $xmlReader = [System.Xml.XmlReader]::Create($xmlStream, $settings)
+                    while ($xmlReader.Read()) {}
+                } finally {
+                    if ($null -ne $xmlReader) { $xmlReader.Dispose() }
+                    if ($null -ne $xmlStream) { $xmlStream.Dispose() }
+                }
             }
         }
     } catch {
@@ -1257,6 +1305,12 @@ function Assert-XlsxArchiveComplete {
         if ($null -ne $archive) { $archive.Dispose() }
         if ($null -ne $stream) { $stream.Dispose() }
     }
+}
+
+function Test-AllowedCloudDownloadUri {
+    param([Uri]$Uri)
+    return ($null -ne $Uri -and $Uri.Scheme -eq 'https' -and $Uri.Port -eq 443 -and $Uri.UserInfo -eq '' -and
+        ($Uri.Host -eq 'docs.google.com' -or $Uri.Host.EndsWith('.googleusercontent.com', [StringComparison]::OrdinalIgnoreCase)))
 }
 
 function Download-GoogleSheetsWorkbookOnce {
@@ -1269,18 +1323,29 @@ function Download-GoogleSheetsWorkbookOnce {
     $outputStream = $null
     $success = $false
     try {
-        $request = [System.Net.HttpWebRequest]::Create($exportUrl)
+        $nextUri = [Uri]$exportUrl
+        for ($redirect = 0; $redirect -le 5; $redirect++) {
+        if (-not (Test-AllowedCloudDownloadUri -Uri $nextUri)) { throw '云端下载被重定向到不受允许的地址。' }
+        $request = [System.Net.HttpWebRequest]::Create($nextUri)
         $request.Method = 'GET'
         $request.Timeout = 30000
         $request.ReadWriteTimeout = 30000
-        $request.AllowAutoRedirect = $true
-        $request.MaximumAutomaticRedirections = 5
+        $request.AllowAutoRedirect = $false
         $request.UserAgent = 'CheckSentry/1.0.5'
         $request.CachePolicy = New-Object System.Net.Cache.RequestCachePolicy -ArgumentList ([System.Net.Cache.RequestCacheLevel]::Reload)
         $request.Headers['Pragma'] = 'no-cache'
         $response = $request.GetResponse()
+        if ([int]$response.StatusCode -in @(301,302,303,307,308)) {
+            if ($redirect -eq 5 -or [string]::IsNullOrWhiteSpace($response.Headers['Location'])) { throw '云端下载重定向次数或地址无效。' }
+            $nextUri = New-Object Uri -ArgumentList @($nextUri, [string]$response.Headers['Location'])
+            $response.Close()
+            $response = $null
+            continue
+        }
+        break
+        }
         $effectiveUri = $response.ResponseUri
-        if ($null -eq $effectiveUri -or ($effectiveUri.Host -ne 'docs.google.com' -and -not $effectiveUri.Host.EndsWith('.googleusercontent.com', [StringComparison]::OrdinalIgnoreCase))) {
+        if (-not (Test-AllowedCloudDownloadUri -Uri $effectiveUri)) {
             throw '云端下载被重定向到不受允许的主机。'
         }
         if ($response.ContentLength -gt $maximumBytes) { throw '云端 XLSX 文件超过 10 MB 限制。' }
@@ -2462,8 +2527,8 @@ function Stop-InventoryScanJobs {
     foreach ($entry in @($script:InventoryScanJobs.Values)) {
         $job = $entry.Job
         if ($null -eq $job) { continue }
-        try { if ($job.State -in @('Running', 'NotStarted')) { Stop-Job -Job $job -ErrorAction SilentlyContinue } } catch {}
-        try { Remove-Job -Job $job -Force -ErrorAction SilentlyContinue } catch {}
+        try { if ($job.State -in @('Running', 'NotStarted')) { Stop-Job -Job $job -ErrorAction Stop } } catch { Write-Verbose "停止扫描任务失败：$($_.Exception.Message)" }
+        try { Remove-Job -Job $job -Force -ErrorAction Stop } catch { Write-Verbose "清理扫描任务失败：$($_.Exception.Message)" }
     }
     $script:InventoryScanJobs = @{}
 }
@@ -2560,7 +2625,8 @@ using System.Runtime.InteropServices;
 
 namespace CheckSentry {
     public static class NativeIconMethods {
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        [DllImport("shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern uint ExtractIconEx(
             string szFileName,
             int nIconIndex,
@@ -2569,6 +2635,7 @@ namespace CheckSentry {
             uint nIcons);
 
         [DllImport("user32.dll", SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DestroyIcon(IntPtr hIcon);
     }
@@ -2582,7 +2649,8 @@ function Get-LocalIconDataUri {
         [string]$Path,
         [int]$IconIndex = 0
     )
-    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
+    if ([string]::IsNullOrWhiteSpace($Path) -or $Path -match '^(?:\\\\|//|[A-Za-z][A-Za-z0-9+.-]*://)') { return '' }
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
     try {
         $fileItem = Get-Item -LiteralPath $Path -ErrorAction Stop
         $cacheKey = '{0}|{1}|{2}|{3}' -f $fileItem.FullName.ToLowerInvariant(), $IconIndex, $fileItem.Length, $fileItem.LastWriteTimeUtc.Ticks
@@ -2590,6 +2658,7 @@ function Get-LocalIconDataUri {
         if ($script:IconDataCache.Count -gt 2048) { $script:IconDataCache.Clear() }
 
         $extension = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
+        if ($extension -notin @('.exe', '.dll') -and $fileItem.Length -gt 524288) { $script:IconDataCache[$cacheKey] = ''; return '' }
         if ($extension -in @('.exe', '.dll')) {
             Add-Type -AssemblyName System.Drawing -ErrorAction Stop
             Initialize-NativeIconApi
@@ -3000,7 +3069,7 @@ function Assert-AuthorizedPostRequest {
     if (-not (Test-LoopbackHost -HostName $Request.Url.Host)) { throw '请求主机不是本机回环地址。' }
     $contentType = [string]$Request.ContentType
     if (($contentType -split ';')[0].Trim().ToLowerInvariant() -ne 'application/json') { throw '请求 Content-Type 必须为 application/json。' }
-    if ([string]$Request.Headers['X-CheckSentry-Token'] -ne $CsrfToken) { throw '安全令牌无效，请刷新页面后重试。' }
+    if ([string]$Request.Headers['X-CheckSentry-Token'] -cne $CsrfToken) { throw '安全令牌无效，请刷新页面后重试。' }
     $originText = [string]$Request.Headers['Origin']
     if (-not [string]::IsNullOrWhiteSpace($originText)) {
         $origin = $null
@@ -3117,11 +3186,41 @@ function Show-RuleConflictWarnings {
     }
 }
 
+function Get-ReportSession {
+    param($Request, [hashtable]$Sessions, [string]$CookieName)
+    if (-not (Test-LoopbackHost -HostName $Request.Url.Host)) { return $null }
+    $cookie = $Request.Cookies[$CookieName]
+    if ($null -eq $cookie -or [string]$cookie.Value -notmatch '^[a-f0-9]{64}$') { return $null }
+    if (-not $Sessions.ContainsKey([string]$cookie.Value)) { return $null }
+    return $Sessions[[string]$cookie.Value]
+}
+
+function Get-SessionBootstrapHtml {
+    param([string]$Nonce)
+    return @"
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>CheckSentry</title>
+<body><p id="message">正在打开核对工具……</p><script nonce="$Nonce">
+(async function () {
+  const token = new URLSearchParams(location.hash.slice(1)).get('session');
+  history.replaceState(null, '', '/');
+  if (!token) { document.getElementById('message').textContent = '请使用启动窗口中的完整链接打开工具。'; return; }
+  try {
+    const response = await fetch('/api/session', {method:'POST', headers:{'Content-Type':'application/json','X-CheckSentry-Token':token}, body:JSON.stringify({token})});
+    if (!response.ok) throw new Error('验证失败，请使用启动窗口中的完整链接重试。');
+    location.replace('/');
+  } catch (error) { document.getElementById('message').textContent = error.message; }
+})();
+</script></body></html>
+"@
+}
+
 function Start-ReportServer {
     param([int]$RequestedPort, [string]$Path, [bool]$IncludeSystem)
     if ($RequestedPort -lt 1 -or $RequestedPort -gt 65535) { throw '端口必须在 1 到 65535 之间。' }
     $csrfToken = New-RandomToken -ByteCount 32
     $nonce = New-RandomToken -ByteCount 24
+    $bootstrapToken = New-RandomToken -ByteCount 32
+    $sessions = @{}
     $listener = $null
     $actualPort = $RequestedPort
     for ($attempt = 0; $attempt -lt 10; $attempt++) {
@@ -3140,7 +3239,8 @@ function Start-ReportServer {
         }
     }
     if ($null -eq $listener -or -not $listener.IsListening) { throw '无法绑定端口。请关闭占用程序或使用 -Port 指定其他端口。' }
-    $url = "http://localhost:$actualPort/"
+    $cookieName = "CheckSentrySession_$actualPort"
+    $url = "http://localhost:$actualPort/#session=$bootstrapToken"
     Write-Host "报告服务已启动：$url" -ForegroundColor Green
     if ($actualPort -ne $RequestedPort) { Write-Host "端口 $RequestedPort 已占用，已自动改用 $actualPort。" -ForegroundColor Yellow }
     Write-Host '关闭此窗口即可停止工具。' -ForegroundColor DarkGray
@@ -3152,8 +3252,40 @@ function Start-ReportServer {
             try { $context = $listener.GetContext() } catch { if (-not $listener.IsListening) { break }; continue }
             $request = $context.Request
             $response = $context.Response
+            $session = $null
             try {
                 $route = $request.Url.AbsolutePath
+                if (-not (Test-LoopbackHost -HostName $request.Url.Host) -or
+                    -not [Net.IPAddress]::IsLoopback($request.RemoteEndPoint.Address)) {
+                    Write-JsonResponse -Response $response -Object @{ ok = $false; error = '拒绝非本机请求。' } -StatusCode 403 -Nonce $nonce
+                    continue
+                }
+                if ($request.HttpMethod -eq 'POST' -and $route -eq '/api/session') {
+                    Assert-AuthorizedPostRequest -Request $request -CsrfToken $bootstrapToken
+                    $body = Read-JsonRequestBody -Request $request
+                    if ([string]$body.token -cne $bootstrapToken) { throw '启动验证失败。' }
+                    $session = Get-ReportSession -Request $request -Sessions $sessions -CookieName $cookieName
+                    if ($null -eq $session) {
+                        if ($sessions.Count -ge 64) { throw '打开的会话过多，请重新启动工具。' }
+                        $sessionId = New-RandomToken -ByteCount 32
+                        $session = @{ CsrfToken = (New-RandomToken -ByteCount 32); Unlocked = $false }
+                        $sessions[$sessionId] = $session
+                        $response.Headers.Add('Set-Cookie', "$cookieName=$sessionId; Path=/; HttpOnly; SameSite=Strict")
+                    }
+                    Write-JsonResponse -Response $response -Object @{ ok = $true } -StatusCode 200 -Nonce $nonce
+                    continue
+                }
+                $session = Get-ReportSession -Request $request -Sessions $sessions -CookieName $cookieName
+                if ($null -eq $session) {
+                    if ($request.HttpMethod -eq 'GET' -and $route -eq '/') {
+                        Write-HtmlResponse -Response $response -Html (Get-SessionBootstrapHtml -Nonce $nonce) -StatusCode 200 -Nonce $nonce
+                    } else {
+                        Write-JsonResponse -Response $response -Object @{ ok = $false; error = '会话未验证，请使用启动窗口中的完整链接打开工具。' } -StatusCode 401 -Nonce $nonce
+                    }
+                    continue
+                }
+                $csrfToken = [string]$session.CsrfToken
+                $script:TakeoverUnlocked = [bool]$session.Unlocked
                 if ($request.HttpMethod -eq 'GET' -and $route -eq '/api/scan-status') {
                     Write-JsonResponse -Response $response -Object (Get-InventoryScanStatus) -StatusCode 200 -Nonce $nonce
                 } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/api/icon') {
@@ -3180,16 +3312,6 @@ function Start-ReportServer {
                     Write-JsonResponse -Response $response -Object @{ ok = $true; configured = ($null -ne $cloudSettings); url = $cloudUrl; syncState = $script:CloudSyncState } -StatusCode 200 -Nonce $nonce
 
                 } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/') {
-                    $forceRefresh = $request.QueryString['refresh'] -eq '1'
-                    if ($forceRefresh) {
-                        try {
-                            $cloudSyncResult = Sync-CloudWorkbook -Path $Path
-                            if ($cloudSyncResult.Configured -and $cloudSyncResult.Changed) { Write-Host "重新扫描：已从云端同步规则到本地清单：$($cloudSyncResult.Count) 条" -ForegroundColor Green }
-                        } catch {
-                            throw "重新扫描前云端规则验证失败：$($_.Exception.Message)"
-                        }
-                        Start-InventoryScanJobs -IncludeSystem:$IncludeSystem -IncludeInactive:$IncludeInactiveExtensions -AllUsers:$ScanAllUsers
-                    }
                     $scanStatus = Get-InventoryScanStatus
                     if (-not $scanStatus.Ready) {
                         if (-not [string]::IsNullOrWhiteSpace([string]$scanStatus.Error)) { throw [string]$scanStatus.Error }
@@ -3213,7 +3335,11 @@ function Start-ReportServer {
                 } elseif ($request.HttpMethod -eq 'POST') {
                     Assert-AuthorizedPostRequest -Request $request -CsrfToken $csrfToken
                                         $data = Read-JsonRequestBody -Request $request
-                    if ($route -eq '/api/manage/password') {
+                    if ($route -eq '/api/scan') {
+                        $cloudSyncResult = Sync-CloudWorkbook -Path $Path
+                        Start-InventoryScanJobs -IncludeSystem:$IncludeSystem -IncludeInactive:$IncludeInactiveExtensions -AllUsers:$ScanAllUsers
+                        Write-JsonResponse -Response $response -Object @{ ok = $true } -StatusCode 200 -Nonce $nonce
+                    } elseif ($route -eq '/api/manage/password') {
                         Set-TakeoverPasswords -Data $data
                         Write-JsonResponse -Response $response -Object @{ ok = $true } -StatusCode 200 -Nonce $nonce
                     } elseif ($route -eq '/api/manage/cloudSettings') {
@@ -3363,6 +3489,8 @@ function Start-ReportServer {
                     Write-Verbose "写入错误响应失败：$($_.Exception.Message)"
                 }
             } finally {
+                if ($null -ne $session -and $route -ne '/api/session') { $session.Unlocked = $script:TakeoverUnlocked }
+                $script:TakeoverUnlocked = $false
                 try { $response.OutputStream.Close() } catch { Write-Verbose "关闭 HTTP 响应流失败：$($_.Exception.Message)" }
             }
         }
@@ -3424,7 +3552,7 @@ try {
             $logDirectory = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))
             if (-not [string]::IsNullOrWhiteSpace($logDirectory)) { [System.IO.Directory]::CreateDirectory($logDirectory) | Out-Null }
             [System.IO.File]::AppendAllText($LogPath, ((Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' ' + $startupFailureMessage + [Environment]::NewLine), $script:Utf8ConsoleEncoding)
-        } catch {}
+        } catch { [Console]::Error.WriteLine("写入启动错误日志失败：$($_.Exception)") }
     }
     exit 1
 }

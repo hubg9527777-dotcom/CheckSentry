@@ -1,5 +1,5 @@
 ﻿param(
-    [string]$Version = '1.1.2',
+    [string]$Version = '1.1.4',
     [ValidateSet('win-x64')][string[]]$Runtime = @('win-x64'),
     [string]$CertificatePath = '',
     [string]$CertificatePassword = '',
@@ -9,7 +9,16 @@
 
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
+if ($Version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { throw '版本号格式无效。' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $root 'dist' }
+$OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
+$rootFull = [System.IO.Path]::GetFullPath($root).TrimEnd('\', '/')
+$outputFull = $OutputDirectory.TrimEnd('\', '/')
+if ($outputFull -eq '' -or $rootFull -eq $outputFull -or $rootFull.StartsWith($outputFull + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw '不能把项目目录或其父目录作为构建输出目录。' }
+if (Test-Path -LiteralPath $OutputDirectory) {
+    if ((Get-Item -LiteralPath $OutputDirectory).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '构建输出目录不能是链接。' }
+    if (@(Get-ChildItem -LiteralPath $OutputDirectory -Force).Count -gt 0) { throw '构建输出目录非空。请指定新的空目录；工具不会递归删除已有文件。' }
+}
 $moduleManifest = Join-Path $root 'Modules\ImportExcel\7.8.10\ImportExcel.psd1'
 if (-not (Test-Path -LiteralPath $moduleManifest -PathType Leaf)) { throw '缺少随包 ImportExcel 7.8.10，请先运行 Prepare-Dependencies.ps1。' }
 if ([string]::IsNullOrWhiteSpace($DotNetPath)) {
@@ -19,7 +28,6 @@ if ([string]::IsNullOrWhiteSpace($DotNetPath)) {
 }
 if (-not (Test-Path -LiteralPath $DotNetPath -PathType Leaf)) { throw "dotnet 路径无效：$DotNetPath" }
 
-if (Test-Path -LiteralPath $OutputDirectory) { Remove-Item -LiteralPath $OutputDirectory -Recurse -Force }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $files = @('README.md','TESTING.md')
 

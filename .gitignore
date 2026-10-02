@@ -26,3 +26,13 @@ Thumbs.db
 dist/
 launcher/bin/
 launcher/obj/
+dist-*/
+Logs/
+.CheckSentryRuntime/
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem

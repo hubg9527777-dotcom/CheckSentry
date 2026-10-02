@@ -53,8 +53,15 @@ function Read-BrowserJsonDocument {
         try {
             $shareMode = [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete
             $stream = New-Object System.IO.FileStream($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, $shareMode)
+            if ($stream.Length -gt 33554432) { throw '浏览器 JSON 文件超过 32 MB 安全限制。' }
             $reader = New-Object System.IO.StreamReader($stream, (New-Object System.Text.UTF8Encoding($false)), $true)
-            $jsonText = $reader.ReadToEnd()
+            $builder = New-Object Text.StringBuilder
+            $buffer = New-Object char[] 4096
+            while (($read = $reader.Read($buffer, 0, $buffer.Length)) -gt 0) {
+                if ($builder.Length + $read -gt 33554432) { throw '浏览器 JSON 内容超过安全限制。' }
+                $null = $builder.Append($buffer, 0, $read)
+            }
+            $jsonText = $builder.ToString()
             if ([string]::IsNullOrWhiteSpace($jsonText)) { throw 'JSON 文件内容为空。' }
             return ($jsonText | ConvertFrom-Json -ErrorAction Stop)
         } catch {

@@ -11,6 +11,9 @@ for (const name of ['report_template.html', 'management_template.html']) {
 }
 
 const reportHtml = fs.readFileSync(path.join(root, 'report_template.html'), 'utf8');
+if (reportHtml.includes('/?refresh=1') || !reportHtml.includes("apiPost('/api/scan', {})")) {
+  throw new Error('report_template.html: rescan must use a token-protected POST');
+}
 if (!/id="cloudSyncProgress"[\s\S]*cloud-sync-spinner/.test(reportHtml)) {
   throw new Error('report_template.html: cloud save progress indicator missing');
 }
@@ -26,4 +29,16 @@ if (!/item-icon-slot[\s\S]*icon-ready/.test(reportHtml)) {
 const managementHtml = fs.readFileSync(path.join(root, 'management_template.html'), 'utf8');
 if (/data-icon-key="\$\{escapeHtml\(iconKey\)\}"[^>]*display:none/.test(managementHtml)) {
   throw new Error('management_template.html: lazy rule icon cannot use display:none');
+}
+// Apps Script is local-only and intentionally absent from GitHub release builds.
+const appsPath = path.join(root, 'GoogleAppsScript.gs');
+if (fs.existsSync(appsPath)) {
+  const vm = require('vm');
+  const context = vm.createContext({ console });
+  vm.runInContext(fs.readFileSync(appsPath, 'utf8'), context);
+  if (vm.runInContext('asSafeSheetValue_("=IMPORTDATA(1)")', context) !== "'=IMPORTDATA(1)" ||
+      vm.runInContext('asSafeSheetValue_(123)', context) !== 123) {
+    throw new Error('GoogleAppsScript.gs: deletion log formula guard failed');
+  }
+  console.log('GoogleAppsScript.gs: syntax and formula guard OK');
 }
