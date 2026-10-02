@@ -17,11 +17,11 @@ jobs:
       packages: read
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: '8.0.x'
-      - uses: github/codeql-action/init@v4
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           languages: csharp
           build-mode: manual
@@ -29,7 +29,7 @@ jobs:
       - name: Build launcher for CodeQL
         shell: pwsh
         run: dotnet build .\launcher\CheckSentry.Launcher.csproj --configuration Release
-      - uses: github/codeql-action/analyze@v4
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           category: '/language:csharp'
 
@@ -39,8 +39,8 @@ jobs:
       matrix:
         runtime: [win-x64]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: '8.0.x'
       - name: Run PowerShell tests
@@ -49,10 +49,11 @@ jobs:
       - name: Build and sign
         shell: pwsh
         env:
+          RELEASE_TAG: ${{ github.ref_name }}
           SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
           SIGNING_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
         run: |
-          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $version = $env:RELEASE_TAG.TrimStart('v')
           if ($version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { $version = '0.0.0-test' }
           $certificatePath = ''
           if (-not [string]::IsNullOrWhiteSpace($env:SIGNING_CERT_BASE64)) {
@@ -61,7 +62,7 @@ jobs:
           }
           .\Build-Release.ps1 -Version $version -Runtime '${{ matrix.runtime }}' -CertificatePath $certificatePath -CertificatePassword $env:SIGNING_CERT_PASSWORD -OutputDirectory (Join-Path $PWD ('dist-${{ matrix.runtime }}'))
           if ($certificatePath -and (Test-Path $certificatePath)) { Remove-Item $certificatePath -Force }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: CheckSentry-${{ matrix.runtime }}
           path: dist-${{ matrix.runtime }}/*.zip*
@@ -75,11 +76,11 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: release
           merge-multiple: true
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: 'release/*.zip'
       - name: Publish release
