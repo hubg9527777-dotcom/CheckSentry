@@ -28,6 +28,7 @@ CheckSentry 是一个纯本地运行的 Windows IT 合规核对工具。它从 W
 | `Get-InstalledExtensions.ps1` | 七类浏览器插件扫描 |
 | `report_template.html` | 报告页面模板 |
 | `management_template.html` | 清单维护页面模板 |
+| `special_template.html` | 专项排查页面与宽松名称匹配 |
 | `list_template.xlsx` | 四张工作表的空白模板 |
 | `TESTING.md` | Windows 虚拟机发布前验收清单 |
 | `list.xlsx` | 运行后生成的个人清单；已被 `.gitignore` 排除，禁止上传 GitHub |
@@ -190,7 +191,7 @@ GitHub Actions 会在同一个任务中完成源文件校验、PowerShell 5.1/7 
 - 下载 ZIP 后执行：
 
 ```bash
-gh attestation verify CheckSentry-1.1.4-win-x64.zip --repo hubg9527777-dotcom/CheckSentry
+gh attestation verify CheckSentry-1.1.5-win-x64.zip --repo hubg9527777-dotcom/CheckSentry
 ```
 
 ### 版本号说明
@@ -211,3 +212,13 @@ git push origin :refs/tags/v1.0.1
 git tag -a v1.0.1 -m "Release version 1.0.1"
 git push origin v1.0.1
 ```
+
+## 1.1.5 专项排查
+
+打开工具后点击「专项排查」，在大输入框中一行输入一个要排查的名称，再点击「执行排查」。
+
+专项排查复用当前扫描范围内的软件和浏览器扩展，忽略版本、大小写和分隔符，同时按名称片段、增删字母和顺序差异扩大候选。相关性只用于排序，不截断候选数量。结果按输入名称分组，显示实际名称、版本、发布者、位置和匹配依据，供人工判断。它不修改三类合规清单、不自动卸载，输入不上传云端。
+
+「未找到相关候选」仅指当前扫描清单；不代表设备一定没有该项目。新安装的软件或扩展请先返回首页重新扫描。一次最多 500 行，每行最多 256 个字符，超出时会明确提示，不会静默丢弃。数字产品名称保留原名参与匹配，另生成去版本的匹配形式。
+
+专项排查会显示输入行数并合并完全重复的名称，支持 Ctrl / ⌘ + Enter 执行。输入在当前浏览器标签页内暂存，刷新或返回后可恢复；清空输入会同时删除暂存。执行时显示进度，可随时停止。结果显示排查名称数、有候选名称数、去重后的候选安装项数，以及未找到候选的名称数；可按名称快速跳转，复制单项信息或全部结果。弱关联默认全部展开。

@@ -2961,6 +2961,23 @@ function Get-RowHtml {
 "@
 }
 
+function ConvertTo-SpecialInventory {
+    param($Inventory)
+    foreach ($item in @($Inventory.Software)) {
+        if ($null -eq $item) { continue }
+        [PSCustomObject]@{ name = [string]$item.名称; version = [string]$item.版本; publisher = [string]$item.发布者; type = '软件'; extensionId = ''; locations = @([string]$item.安装路径) }
+    }
+    foreach ($group in @('Chromium', 'Firefox')) {
+        foreach ($item in @($Inventory.$group)) {
+            if ($null -eq $item) { continue }
+            $locations = @($item.Locations | ForEach-Object {
+                (@([string]$_.WindowsUser, [string]$_.Browser, [string]$_.ProfileName, [string]$_.ProfilePath) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' · '
+            })
+            [PSCustomObject]@{ name = [string]$item.Name; version = [string]$item.Version; publisher = [string]$item.Publisher; type = ($group + ' 浏览器扩展'); extensionId = [string]$item.ExtensionId; locations = $locations }
+        }
+    }
+}
+
 function Build-ReportHtml {
     param($Results, [string]$Path, [string]$CsrfToken, [string]$Nonce)
     $red = @($Results | Where-Object { $_.状态 -eq '命中黑名单' })
@@ -3010,7 +3027,7 @@ function Build-ReportHtml {
     } else {
         $cloudStatusHtml = "<span class='tag'>云端：未配置</span>"
     }
-    $summary = "<div class='summary'><span>核对时间：$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</span><span class='tag tag-red'>黑名单：$($red.Count)</span><span class='tag tag-yellow'>版本变化：$($yellow.Count)</span><span class='tag tag-pending'>待定：$($pending.Count)</span><span class='tag tag-green'>已匹配：$($green.Count)</span>$cloudStatusHtml<span class='tag'>清单文件：$(ConvertTo-HtmlEncodedText $Path)</span><button type='button' id='openManagementButton'>清单维护</button><button type='button' id='cloudSettingsButton'>云端清单设置</button><button type='button' id='cloudSyncButton'>立即同步</button><button type='button' id='reloadButton'>重新扫描分类</button></div>"
+    $summary = "<div class='summary'><span>核对时间：$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</span><span class='tag tag-red'>黑名单：$($red.Count)</span><span class='tag tag-yellow'>版本变化：$($yellow.Count)</span><span class='tag tag-pending'>待定：$($pending.Count)</span><span class='tag tag-green'>已匹配：$($green.Count)</span>$cloudStatusHtml<span class='tag'>清单文件：$(ConvertTo-HtmlEncodedText $Path)</span><a href='/special' class='special-entry' style='display:inline-block;padding:8px 16px;background:#1d4ed8;color:white;border-radius:6px;text-decoration:none;font-weight:600'>专项排查</a><button type='button' id='openManagementButton'>清单维护</button><button type='button' id='cloudSettingsButton'>云端清单设置</button><button type='button' id='cloudSyncButton'>立即同步</button><button type='button' id='reloadButton'>重新扫描分类</button></div>"
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'report_template.html') -Raw -Encoding UTF8
     return $template.Replace('__SUMMARY__', $summary).Replace('__BODY__', ($cloudWarningHtml + $body)).Replace('__CSRF_TOKEN__', (ConvertTo-HtmlEncodedText $CsrfToken)).Replace('__CSP_NONCE__', (ConvertTo-HtmlEncodedText $Nonce))
 }
@@ -3292,6 +3309,19 @@ function Start-ReportServer {
                     $iconKey = [string]$request.QueryString['key']
                     $iconDataUri = Get-IconDataUriByKey -Key $iconKey
                     Write-JsonResponse -Response $response -Object @{ ok = (-not [string]::IsNullOrWhiteSpace($iconDataUri)); dataUri = $iconDataUri } -StatusCode 200 -Nonce $nonce
+                } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/special') {
+                    $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'special_template.html') -Raw -Encoding UTF8
+                    $template = $template.Replace('__CSP_NONCE__', (ConvertTo-HtmlEncodedText $nonce))
+                    Write-HtmlResponse -Response $response -Html $template -StatusCode 200 -Nonce $nonce
+                } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/api/special/inventory') {
+                    $scanStatus = Get-InventoryScanStatus
+                    if (-not [string]::IsNullOrWhiteSpace([string]$scanStatus.Error)) { throw [string]$scanStatus.Error }
+                    if (-not $scanStatus.Ready) {
+                        Write-JsonResponse -Response $response -Object @{ ok = $true; ready = $false } -StatusCode 200 -Nonce $nonce
+                    } else {
+                        $inventory = Get-InventoryData -IncludeSystem:$IncludeSystem
+                        Write-JsonResponse -Response $response -Object @{ ok = $true; ready = $true; items = @(ConvertTo-SpecialInventory -Inventory $inventory); scannedAt = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') } -StatusCode 200 -Nonce $nonce
+                    }
                 } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/manage') {
                     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'management_template.html') -Raw -Encoding UTF8
                     $template = $template.Replace('__CSRF_TOKEN__', (ConvertTo-HtmlEncodedText $csrfToken)).Replace('__CSP_NONCE__', (ConvertTo-HtmlEncodedText $nonce))

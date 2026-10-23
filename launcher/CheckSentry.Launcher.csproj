@@ -4,6 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.1.5</Version>
     <AssemblyName>CheckSentry</AssemblyName>
     <RootNamespace>CheckSentry.Launcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -20,6 +21,7 @@
     <EmbeddedResource Include="..\Get-InstalledSoftware.ps1" LogicalName="payload/Get-InstalledSoftware.ps1" />
     <EmbeddedResource Include="..\Get-InstalledExtensions.ps1" LogicalName="payload/Get-InstalledExtensions.ps1" />
     <EmbeddedResource Include="..\report_template.html" LogicalName="payload/report_template.html" />
+    <EmbeddedResource Include="..\special_template.html" LogicalName="payload/special_template.html" />
     <EmbeddedResource Include="..\management_template.html" LogicalName="payload/management_template.html" />
     <EmbeddedResource Include="..\list_template.xlsx" LogicalName="payload/list_template.xlsx" />
     <EmbeddedResource Include="..\Modules\ImportExcel\7.8.10\**\*" LogicalName="payload/Modules/ImportExcel/7.8.10/%(RecursiveDir)%(Filename)%(Extension)" />

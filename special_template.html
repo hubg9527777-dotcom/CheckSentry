@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>专项排查 · CheckSentry 1.1.5</title>
+<style>
+:root{color-scheme:light;--blue:#2455cc;--ink:#182841;--muted:#586b83;--line:#dde5f0}*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:var(--ink);font:15px/1.65 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}main{max-width:1120px;margin:auto;padding:28px 24px 72px}nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:16px}a{color:var(--blue);text-decoration:none}h1{font-size:30px;line-height:1.3;margin:0 0 8px}h2{font-size:20px;margin:0}p{margin:8px 0;color:var(--muted)}.intro{margin-bottom:22px}.flow{display:flex;gap:10px;flex-wrap:wrap;color:#3e5679;font-size:13px;margin-top:16px}.flow span{padding:5px 11px;background:#e9effa;border-radius:6px}.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:20px;box-shadow:0 3px 14px #18325704;scroll-margin-top:16px}.step{display:inline-flex;align-items:center;justify-content:center;background:#e7efff;color:#1746ab;width:28px;height:28px;border-radius:50%;margin-right:8px;font-size:15px}.input-label{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:18px 0 8px}label{font-weight:650}textarea{display:block;width:100%;min-height:230px;resize:vertical;border:1px solid #aab8cc;border-radius:9px;padding:15px;color:var(--ink);font:16px/1.85 system-ui;outline-offset:3px}textarea:focus{outline:2px solid #8aaafb;border-color:var(--blue)}button{border:0;border-radius:8px;padding:10px 18px;font:600 14px system-ui;cursor:pointer}button.primary{background:var(--blue);color:white;padding:12px 28px;font-size:16px}button:disabled{opacity:.55;cursor:wait}button.secondary{background:#edf2fa;color:#294367}button.quiet{background:transparent;color:#416088;padding:5px 9px;font-size:13px}button.quiet:hover{background:#edf2fa}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}.hint{font-size:13px;color:#617088}.status{margin-top:14px;white-space:pre-wrap;overflow-wrap:anywhere}.status.error{color:#a32525}.status.busy{color:var(--blue)}.input-footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:7px}.progress-area{margin-top:16px}.progress-area progress{display:block;width:100%;height:8px;accent-color:var(--blue)}.result-heading{display:flex;justify-content:space-between;align-items:center;gap:16px}.totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 12px}.stat{border:1px solid var(--line);padding:14px 16px;border-radius:9px;background:#f8faff}.stat strong{display:block;font-size:27px;line-height:1.3;color:#1b3f82}.stat span{font-size:13px;color:var(--muted)}.stat.attention{background:#fff8eb;border-color:#eddbb5}.stat.attention strong{color:#926111}.note{background:#fff8e9;border:1px solid #f0dbab;border-radius:8px;padding:11px 14px;color:#79571c;font-size:13px}.result-tools{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}.query-index{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}.query-index a{font-size:13px;padding:5px 10px;border:1px solid #d9e3f4;border-radius:6px;max-width:100%;overflow-wrap:anywhere;background:#f6f9ff}.query-index a.no-match{background:#f8f9fb;color:#68778c;border-color:#e3e7ed}.group{margin-top:20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;scroll-margin-top:18px}.group-head{padding:15px 18px;background:#f2f6ff;display:flex;justify-content:space-between;gap:12px;align-items:center;overflow-wrap:anywhere;border-bottom:1px solid var(--line)}.group-head h3{margin:0;font-size:18px}.count{white-space:nowrap;color:#445a7a;font-size:13px}.candidate{padding:16px 18px;border-bottom:1px solid #e7edf5;border-left:3px solid #cbd5e1}.candidate:last-child{border-bottom:0}.candidate.related{border-left-color:#d6a336;background:#fffcf5}.card-top{display:flex;justify-content:space-between;align-items:start;gap:14px}.name{font-weight:700;font-size:17px;overflow-wrap:anywhere}.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.badge{display:inline-block;font-size:12px;font-weight:500;background:#eef2f7;color:#4c607c;padding:2px 8px;border-radius:5px}.badge.match{background:#fff0cb;color:#7c5300}.reason{margin:9px 0;color:#78561d;font-size:13px;overflow-wrap:anywhere}.details{display:flex;flex-wrap:wrap;gap:6px 26px;color:#52627a;font-size:13px}.path{margin-top:8px;padding:9px 12px;background:#f6f8fc;border-radius:6px;color:#52627a;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.empty{padding:16px 18px;color:#66768d}.unmatched .group-head{background:#f7f8fa}.unmatched .count{color:#67778f}a:focus-visible,button:focus-visible{outline:3px solid #729df6;outline-offset:3px}[hidden]{display:none!important}@media(max-width:600px){main{padding:20px 14px}.panel{padding:18px}h1{font-size:26px}.totals{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stat{padding:12px}.group-head{align-items:start}.actions .primary{width:100%}.card-top{gap:6px}.card-top button{white-space:nowrap;padding:5px}.result-heading{align-items:start}.count{white-space:normal;text-align:right}.flow{gap:6px}}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="/">← 返回软件与扩展报告</a><span class="hint">CheckSentry 1.1.5</span></nav>
+<header class="intro">
+<h1>专项排查</h1>
+<p>粘贴名称，一次找出相关软件和浏览器扩展。</p>
+<div class="flow" aria-label="操作步骤"><span>① 一行一个名称</span><span>② 点击执行排查</span><span>③ 核对候选，人工处理</span></div>
+</header>
+<section id="inputPanel" class="panel" aria-labelledby="inputTitle">
+<h2 id="inputTitle"><span class="step">1</span>粘贴排查清单</h2>
+<p id="inputHelp">不用整理名称。版本、大小写、间隔符和少量字母差异都会放宽匹配。</p>
+<div class="input-label"><label for="queries">要排查的软件或扩展，一行一个</label><button id="clear" class="quiet" type="button">清空输入</button></div>
+<textarea id="queries" spellcheck="false" aria-describedby="inputHelp inputCount" placeholder="例如：&#10;DR_AutoEdit_v1.1&#10;obs-multi-rtmp"></textarea>
+<div class="input-footer"><span id="inputCount" class="hint">还未输入名称</span><span id="draftHint" class="hint">输入仅在本标签页暂存，不上传</span></div>
+<div class="actions"><button id="run" class="primary" type="button">执行排查</button><button id="cancel" class="secondary" type="button" hidden>停止排查</button><span class="hint">Ctrl / ⌘ + Enter 执行</span></div>
+<div id="progressArea" class="progress-area" hidden><progress id="progress" max="100" value="0" aria-label="排查进度"></progress></div>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+</section>
+<section id="results" class="panel" aria-labelledby="resultTitle" aria-busy="false" hidden>
+<div class="result-heading"><h2 id="resultTitle" tabindex="-1"><span class="step">2</span>查看排查结果</h2><a href="#inputPanel" class="hint">返回修改清单 ↑</a></div>
+<div id="totals" class="totals"></div>
+<p id="scanInfo" class="hint"></p>
+<div class="note">名称接近的候选排在前面，弱关联也全部保留。请核对后自行决定是否卸载；未找到候选不代表设备一定没有该项目。</div>
+<div class="result-tools"><span class="hint">点击名称可跳到对应结果；未找到候选的名称排在最后。</span><button id="copy" class="secondary" type="button">复制全部结果</button></div>
+<div id="queryIndex" class="query-index" aria-label="按排查名称跳转"></div>
+<div id="groups"></div>
+</section>
+</main>
+<script nonce="__CSP_NONCE__">
+'use strict';
+// Pure matching functions are exercised in tests/check-special.js against this actual page.
+function specialForms(value) {
+  const text = String(value || '').normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+  const noVersions = text.replace(/(?:\b(?:version|ver|v)\s*)?\d+(?:[._-]\d+)+(?:[a-z]+)?/gu, ' ')
+    .replace(/\b(?:version|ver|v)\s*\d+\b/gu, ' ');
+  const compact = value => value.replace(/[^\p{L}\p{N}]/gu, '');
+  const words = noVersions.match(/[\p{L}\p{N}]+/gu) || [];
+  // Retain the original form as well, so numbers in names such as 7-Zip and 4K are searchable.
+  return {raw: compact(text), core: compact(noVersions), words: words.filter(word => !/^\d+$/.test(word) && word !== 'v')};
+}
+function editSimilarity(a, b) {
+  // Long names are compared by tokens/substrings too; this bounds the quadratic typo check.
+  if (!a.length || !b.length || a.length > 256 || b.length > 256) return 0;
+  let previous = Array.from({length:b.length + 1}, (_, i) => i), beforePrevious;
+  for (let i = 1; i <= a.length; i++) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j++) {
+      current[j] = Math.min(current[j-1] + 1, previous[j] + 1, previous[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) current[j] = Math.min(current[j], beforePrevious[j-2] + 1);
+    }
+    beforePrevious = previous; previous = current;
+  }
+  return 1 - previous[b.length] / Math.max(a.length, b.length);
+}
+function commonFragment(a, b) {
+  const needed = Math.min(a.length, b.length) <= 4 ? 2 : 3;
+  if (a.length < needed || b.length < needed) return '';
+  for (let i = 0; i <= a.length - needed; i++) if (b.includes(a.slice(i, i + needed))) return a.slice(i, i + needed);
+  return '';
+}
+function matchForms(query, target) {
+  const a = query.core, b = target.core;
+  if (!a || !b) return null;
+  if (query.raw === target.raw || a === b) return {score:100, reason:'名称一致（已忽略版本、大小写和分隔符）'};
+  if (a.includes(b) || b.includes(a) || query.raw.includes(target.raw) || target.raw.includes(query.raw)) return {score:90, reason:'名称相互包含'};
+  const similarity = editSimilarity(a, b);
+  if (similarity >= .45) return {score:60 + similarity * 25, reason:'名称近似，可能存在增字、缺字或字母顺序差异'};
+  const sharedWord = query.words.find(word => word.length >= 2 && target.words.some(other => other.includes(word) || word.includes(other) || editSimilarity(word, other) >= .5));
+  if (sharedWord) return {score:48, reason:'关键词相关：' + sharedWord + '（弱关联）'};
+  const fragment = commonFragment(a, b);
+  if (fragment) return {score:30, reason:'共同名称片段：' + fragment + '（弱关联）'};
+  return null;
+}
+function prepareSpecialItem(item) {
+  return {name:specialForms(item.name), related:[item.extensionId, ...(item.locations || [])].filter(Boolean).map(specialForms)};
+}
+function specialMatch(query, item, prepared = prepareSpecialItem(item)) {
+  const nameMatch = matchForms(query, prepared.name);
+  let best = nameMatch;
+  // A translated extension name may still expose its identity through its ID or installation directory.
+  for (const field of prepared.related) {
+    const match = matchForms(query, field);
+    if (match && (!best || match.score - 20 > best.score)) best = {score:match.score - 20, reason:'插件 ID 或安装位置相关：' + match.reason};
+  }
+  return best;
+}
+function parseSpecialQueries(value) {
+  const lines = String(value).split(/\r\n|\n|\r/).map(line => line.trim()).filter(Boolean);
+  if (!lines.length) throw new Error('请先输入要排查的名称，一行一个。');
+  if (lines.length > 500) throw new Error('一次最多排查 500 行，请分批输入；没有执行或丢弃任何行。');
+  if (lines.some(line => line.length > 256)) throw new Error('有名称超过 256 个字符，请缩短后再执行。');
+  const unique = [...new Set(lines)];
+  const queries = unique.map(text => ({text, forms:specialForms(text)}));
+  const invalid = queries.find(query => !query.forms.core);
+  if (invalid) throw new Error('请填写可识别的名称，不能只填版本号或标点：' + invalid.text);
+  return queries;
+}
+const el = id => document.getElementById(id);
+const draftKey = 'CheckSentry.special.queries.v1';
+let lastResults = [], activeSearch = null;
+function setStatus(text, mode = '') { el('status').textContent = text; el('status').className = 'status ' + mode; }
+function node(tag, text, className) { const result = document.createElement(tag); if (text !== undefined) result.textContent = text; if (className) result.className = className; return result; }
+function inputLines() { return el('queries').value.split(/\r\n|\n|\r/).map(line => line.trim()).filter(Boolean); }
+function updateInputInfo() {
+  const lines = inputLines(), unique = new Set(lines).size, duplicates = lines.length - unique;
+  el('inputCount').textContent = lines.length ? '已输入 ' + lines.length + ' 行 · ' + unique + ' 个名称' + (duplicates ? ' · ' + duplicates + ' 行重复，执行时自动合并' : '') : '还未输入名称';
+  el('clear').disabled = !lines.length && !el('queries').value;
+}
+function saveDraft() {
+  try {
+    if (el('queries').value) sessionStorage.setItem(draftKey, el('queries').value);
+    else sessionStorage.removeItem(draftKey);
+    el('draftHint').textContent = '输入仅在本标签页暂存，不上传';
+  } catch (_) { el('draftHint').textContent = '浏览器禁止暂存，离开前请自行保留输入'; }
+}
+function invalidateResults() {
+  el('results').hidden = true; lastResults = [];
+  el('groups').replaceChildren(); el('queryIndex').replaceChildren();
+}
+function onInputChange() { updateInputInfo(); saveDraft(); invalidateResults(); setStatus('清单已修改，点击「执行排查」即可。'); }
+function checkCancelled(search) { if (search.cancelled) throw new Error('排查已停止。输入已保留，点击「执行排查」可重新开始。'); }
+async function pause(search) { await new Promise(resolve => setTimeout(resolve, 0)); checkCancelled(search); }
+async function loadSpecialInventory(search) {
+  const deadline = Date.now() + 120000;
+  while (Date.now() < deadline) {
+    checkCancelled(search);
+    const controller = new AbortController(); search.controller = controller;
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    let response, data;
+    try {
+      response = await fetch('/api/special/inventory', {cache:'no-store', signal:controller.signal});
+      data = await response.json();
+    } catch (_) {
+      checkCancelled(search);
+      throw new Error('读取扫描结果失败或连接超时。请确认工具仍在运行，再点击「执行排查」重试。');
+    } finally { clearTimeout(timeout); search.controller = null; }
+    checkCancelled(search);
+    if (!response.ok || !data.ok) throw new Error(data.error || '会话已失效，请从工具启动链接重新打开。');
+    if (data.ready) return data;
+    setStatus('本机仍在扫描，完成后将自动排查，无需再次点击…', 'busy');
+    await new Promise(resolve => setTimeout(resolve, 600));
+  }
+  throw new Error('本机扫描尚未完成，请稍后重试，或返回首页查看扫描状态。');
+}
+function matchLabel(match) { return match.reason.startsWith('插件 ID 或安装位置') ? '位置 / ID 相关' : match.score >= 90 ? '名称相关' : match.score >= 60 ? '名称近似' : '弱关联 · 请核对'; }
+function itemText(item) {
+  return [item.name || '未命名项目', '类型：' + item.type, '版本：' + (item.version || '未提供'), '发布者：' + (item.publisher || '未提供'), ...(item.extensionId ? ['插件 ID：' + item.extensionId] : []), '位置：' + ((item.locations || []).filter(Boolean).join('\n') || '扫描未提供位置')].join('\n');
+}
+async function copyText(text, button) {
+  const original = button.textContent; button.disabled = true;
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = '已复制';
+    setTimeout(() => { button.textContent = original; button.disabled = false; }, 1800);
+  } catch (_) { button.disabled = false; setStatus('浏览器不允许自动复制，请直接选中结果文字复制。', 'error'); }
+}
+function renderCandidate(match) {
+  const item = match.item, card = node('article', undefined, 'candidate' + (match.score >= 60 ? ' related' : ''));
+  const top = node('div', undefined, 'card-top'), heading = node('div');
+  heading.append(node('div', item.name || '未命名项目', 'name'));
+  const badges = node('div', undefined, 'badges'); badges.append(node('span', item.type, 'badge'), node('span', matchLabel(match), 'badge' + (match.score >= 60 ? ' match' : ''))); heading.append(badges);
+  const copy = node('button', '复制此项', 'quiet'); copy.type = 'button';
+  copy.addEventListener('click', () => copyText(itemText(item) + '\n匹配依据：' + match.reason, copy));
+  top.append(heading, copy); card.append(top, node('div', '匹配依据：' + match.reason, 'reason'));
+  const details = node('div', undefined, 'details');
+  details.append(node('span', '版本：' + (item.version || '未提供')), node('span', '发布者：' + (item.publisher || '未提供'))); card.append(details);
+  if (item.extensionId) card.append(node('div', '插件 ID：' + item.extensionId, 'path'));
+  card.append(node('div', '位置：' + ((item.locations || []).filter(Boolean).join('\n') || '扫描未提供位置'), 'path'));
+  return card;
+}
+async function renderGroup(group, index, search) {
+  const section = node('section', undefined, 'group' + (group.matches.length ? '' : ' unmatched')); section.id = 'query-result-' + index;
+  const head = node('div', undefined, 'group-head');
+  head.append(node('h3', group.text), node('span', group.matches.length ? group.matches.length + ' 个候选 · 全部列出' : '未找到候选', 'count')); section.append(head);
+  if (!group.matches.length) section.append(node('div', '当前扫描清单中未找到相关候选。可尝试输入更短的关键词；新安装后请返回首页重新扫描。', 'empty'));
+  el('groups').append(section);
+  for (let index = 0; index < group.matches.length; index++) {
+    section.append(renderCandidate(group.matches[index]));
+    if (index % 40 === 39) await pause(search);
+  }
+}
+function addStat(label, count, attention) {
+  const stat = node('div', undefined, 'stat' + (attention ? ' attention' : '')); stat.append(node('strong', String(count)), node('span', label)); el('totals').append(stat);
+}
+async function runSpecialSearch() {
+  if (activeSearch) return;
+  let queries;
+  try { queries = parseSpecialQueries(el('queries').value); } catch (error) { setStatus(error.message, 'error'); el('queries').focus(); return; }
+  const search = {cancelled:false, controller:null}; activeSearch = search;
+  saveDraft(); invalidateResults();
+  el('run').disabled = true; el('run').textContent = '正在排查…'; el('queries').disabled = true; el('clear').disabled = true;
+  el('cancel').hidden = false; el('progressArea').hidden = false; el('progress').value = 0; el('results').setAttribute('aria-busy', 'true');
+  setStatus('正在读取本机软件和浏览器扩展…', 'busy');
+  try {
+    const data = await loadSpecialInventory(search), items = data.items || [];
+    const prepared = items.map(item => ({item, forms:prepareSpecialItem(item)})), groups = [];
+    for (let index = 0; index < queries.length; index++) {
+      const query = queries[index], matches = [];
+      for (let i = 0; i < prepared.length; i++) {
+        const match = specialMatch(query.forms, prepared[i].item, prepared[i].forms);
+        if (match) matches.push({...match, item:prepared[i].item});
+        if (i % 80 === 79) await pause(search);
+      }
+      matches.sort((a,b) => b.score - a.score || a.item.name.localeCompare(b.item.name, 'zh-CN'));
+      groups.push({text:query.text, matches});
+      el('progress').value = Math.round((index + 1) / queries.length * 90);
+      setStatus('正在排查 ' + (index + 1) + ' / ' + queries.length + '：' + query.text, 'busy');
+      await pause(search);
+    }
+    groups.sort((a,b) => Number(Boolean(b.matches.length)) - Number(Boolean(a.matches.length)));
+    const found = groups.filter(group => group.matches.length).length;
+    const candidates = new Set(groups.flatMap(group => group.matches.map(match => match.item))).size;
+    el('totals').replaceChildren();
+    addStat('排查名称', groups.length); addStat('找到候选的名称', found, true); addStat('候选项目（去重）', candidates, true); addStat('未找到候选的名称', groups.length - found);
+    el('scanInfo').textContent = '检索范围：软件 ' + items.filter(item => item.type === '软件').length + ' 项，浏览器扩展 ' + items.filter(item => item.type !== '软件').length + ' 项。新安装或卸载后，请先返回首页重新扫描。';
+    // Render while hidden so interrupted or failed runs never look like complete results.
+    setStatus('匹配完成，正在整理全部候选…', 'busy');
+    for (let index = 0; index < groups.length; index++) {
+      const group = groups[index], link = node('a', group.text + ' · ' + group.matches.length, group.matches.length ? '' : 'no-match'); link.href = '#query-result-' + index;
+      el('queryIndex').append(link);
+      setStatus('正在整理结果 ' + (index + 1) + ' / ' + groups.length + '：' + group.text, 'busy');
+      await renderGroup(group, index, search); el('progress').value = 90 + Math.round((index + 1) / groups.length * 10); await pause(search);
+    }
+    lastResults = groups; el('progress').value = 100; el('results').hidden = false;
+    setStatus('排查完成：' + found + ' 个名称找到候选，共 ' + candidates + ' 个候选项目。请查看下方结果。');
+    el('resultTitle').focus();
+    el('results').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch (error) { invalidateResults(); setStatus(error.message, search.cancelled ? '' : 'error'); }
+  finally {
+    activeSearch = null; el('run').disabled = false; el('run').textContent = '执行排查'; el('queries').disabled = false;
+    el('cancel').hidden = true; el('progressArea').hidden = true; el('results').setAttribute('aria-busy', 'false'); updateInputInfo();
+  }
+}
+el('run').addEventListener('click', runSpecialSearch);
+el('queries').addEventListener('input', onInputChange);
+el('queries').addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); runSpecialSearch(); } });
+el('clear').addEventListener('click', () => { el('queries').value = ''; onInputChange(); setStatus('输入已清空，可粘贴新的排查清单。'); el('queries').focus(); });
+el('cancel').addEventListener('click', () => { if (activeSearch) { activeSearch.cancelled = true; if (activeSearch.controller) activeSearch.controller.abort(); setStatus('正在停止排查，输入将保留…'); } });
+el('copy').addEventListener('click', () => {
+  const text = 'CheckSentry 专项排查 · 候选仅供人工核对\n\n' + lastResults.map(group => '排查名称：' + group.text + '（' + group.matches.length + ' 个候选）\n' + (group.matches.map(match => itemText(match.item) + '\n匹配依据：' + match.reason).join('\n\n') || '当前扫描清单中未找到相关候选，不代表设备一定没有该项目。')).join('\n\n');
+  return copyText(text, el('copy'));
+});
+try { const draft = sessionStorage.getItem(draftKey); if (draft) { el('queries').value = draft; setStatus('已恢复本标签页的排查清单，点击「执行排查」即可。'); } } catch (_) { el('draftHint').textContent = '浏览器禁止暂存，离开前请自行保留输入'; }
+updateInputInfo();
+</script>
+</body>
+</html>

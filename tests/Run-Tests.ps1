@@ -15,6 +15,20 @@ foreach ($scriptName in @('Start-ComplianceCheck.ps1','Get-InstalledSoftware.ps1
 . (Join-Path $root 'Get-InstalledSoftware.ps1')
 . (Join-Path $root 'Get-InstalledExtensions.ps1')
 
+# Special search uses the unclassified inventory, including items already on a whitelist.
+$specialInventory = [PSCustomObject]@{
+    Software = @([PSCustomObject]@{ 名称='DR AutoEdit'; 版本='9.0'; 发布者='Vendor'; 安装路径='C:\Tools\AutoEdit'; 卸载命令='private-command' })
+    Chromium = @([PSCustomObject]@{ Name='OBS Helper'; Version='1.0'; Publisher=''; ExtensionId='test-id'; Locations=@([PSCustomObject]@{ WindowsUser='User'; Browser='Chrome'; ProfileName='Default'; ProfilePath='C:\Profile' }) })
+    Firefox = @([PSCustomObject]@{ Name='Firefox Helper'; Version='2.0'; Publisher=''; ExtensionId='helper@example'; Locations=@() })
+}
+$specialRows = @(ConvertTo-SpecialInventory -Inventory $specialInventory)
+Assert-True ($specialRows.Count -eq 3) '专项排查必须覆盖软件、Chromium 和 Firefox 的原始库存。'
+Assert-True ($specialRows[0].name -eq 'DR AutoEdit' -and $specialRows[0].type -eq '软件') '专项排查软件名称和类型必须保持正确。'
+Assert-True ($specialRows[1].locations[0] -match 'Chrome' -and $specialRows[1].locations[0] -match 'Default') '专项排查扩展必须提供浏览器及个人资料位置。'
+Assert-True ($specialRows[2].extensionId -eq 'helper@example') '专项排查必须保留扩展 ID 作为辅助检索依据。'
+Assert-True ($null -eq $specialRows[0].PSObject.Properties['卸载命令']) '专项排查库存不得暴露或执行卸载命令。'
+Assert-True (@(ConvertTo-SpecialInventory -Inventory ([PSCustomObject]@{ Software=@(); Chromium=@(); Firefox=@() })).Count -eq 0) '空库存必须正常返回空列表。'
+
 Assert-True (Test-VersionMatch -InstalledVersion @('1.2.0','1.3.0') -RuleVersion '1.3.*') '多位置版本应按任一版本匹配。'
 Assert-True (-not (Test-VersionMatch -InstalledVersion @('1.2.0','1.3.0') -RuleVersion '2.*')) '不存在的版本不应匹配。'
 Assert-True (Test-VersionMatch -InstalledVersion '6.45.2' -RuleVersion '[6.45.3, 6.45.2, 6.45.1]') '云端单元格中的版本列表必须按任一版本匹配。'
@@ -241,6 +255,8 @@ $node = Get-Command node -ErrorAction SilentlyContinue
 if ($null -ne $node) {
     & $node.Source (Join-Path $PSScriptRoot 'check-html.js')
     Assert-True ($LASTEXITCODE -eq 0) 'HTML 页面 JavaScript 语法检查失败。'
+    & $node.Source (Join-Path $PSScriptRoot 'check-special.js')
+    Assert-True ($LASTEXITCODE -eq 0) '专项排查匹配与页面检查失败。'
 }
 
 if ($failures.Count -gt 0) {
