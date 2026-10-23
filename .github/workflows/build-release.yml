@@ -60,11 +60,17 @@ jobs:
         shell: pwsh
         env:
           RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
           SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
           SIGNING_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
         run: |
-          $version = $env:RELEASE_TAG.TrimStart('v')
-          if ($version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { $version = '0.0.0-test' }
+          if ($env:RELEASE_REF_TYPE -eq 'tag') {
+            $version = $env:RELEASE_TAG.TrimStart('v')
+          } else {
+            $project = [xml](Get-Content -LiteralPath '.\launcher\CheckSentry.Launcher.csproj' -Raw)
+            $version = [string]$project.Project.PropertyGroup.Version
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { throw 'Invalid build version.' }
           $certificatePath = ''
           if (-not [string]::IsNullOrWhiteSpace($env:SIGNING_CERT_BASE64)) {
             $certificatePath = Join-Path $env:RUNNER_TEMP 'checksentry-signing.pfx'
