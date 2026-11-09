@@ -89,9 +89,24 @@ try {
 } finally {
     Remove-Item -LiteralPath $fixture -Recurse -Force
 }
+# Windows PowerShell 5.1 reads BOM-less non-ASCII scripts as the system ANSI codepage.
+# Check all project scripts so a newly added diagnostic cannot silently break release builds.
 foreach ($scriptFile in @(Get-ChildItem -LiteralPath $root -Filter '*.ps1') + @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1')) {
+    $scriptBytes = [IO.File]::ReadAllBytes($scriptFile.FullName)
+    $hasUtf8Bom = $scriptBytes.Length -ge 3 -and $scriptBytes[0] -eq 0xEF -and $scriptBytes[1] -eq 0xBB -and $scriptBytes[2] -eq 0xBF
+    $hasNonAscii = $false
+    foreach ($scriptByte in $scriptBytes) {
+        if ($scriptByte -ge 128) { $hasNonAscii = $true; break }
+    }
+    Assert-Security (-not $hasNonAscii -or $hasUtf8Bom) "UTF-8 BOM required for Windows PowerShell 5.1: $($scriptFile.Name)"
+
     $tokens = $null; $errors = $null
     $null = [Management.Automation.Language.Parser]::ParseFile($scriptFile.FullName, [ref]$tokens, [ref]$errors)
-    Assert-Security ($errors.Count -eq 0) "PowerShell parse error: $($scriptFile.Name)"
+    if ($errors.Count -gt 0) {
+        $errorDetails = @($errors | ForEach-Object {
+            '{0}:{1}: {2}' -f $_.Extent.StartLineNumber, $_.Extent.StartColumnNumber, $_.Message
+        }) -join '; '
+        throw "PowerShell parse error: $($scriptFile.Name): $errorDetails"
+    }
 }
 Write-Host 'CheckSentry security regression tests passed.' -ForegroundColor Green

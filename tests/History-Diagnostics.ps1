@@ -1,4 +1,4 @@
-# CheckSentry 1.2.0 read-only, redacted coverage diagnosis.
+﻿# CheckSentry 1.2.0 read-only, redacted coverage diagnosis.
 # Does not output application names, user SIDs, full paths or raw event contents.
 $ErrorActionPreference = 'Stop'
 . (Join-Path (Split-Path $PSScriptRoot -Parent) 'Get-ExecutionHistory.ps1')
