@@ -90,6 +90,30 @@ function Get-SafeChildPath {
     }
 }
 
+# Extension metadata is untrusted. Never resolve UNC/device/URI paths as local icons:
+# querying them can initiate SMB authentication or network access during a read-only audit.
+function Test-LocalExtensionIconPath {
+    param([string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path) -or $Path -notmatch '^[A-Za-z]:\\') { return $false }
+    try {
+        $full = [System.IO.Path]::GetFullPath($Path)
+        if ($full -notmatch '^[A-Za-z]:\\') { return $false }
+        # Inspect each directory component from the drive root before touching the file.
+        # A junction/symlink under a local-looking path can point at a network share.
+        $root = [System.IO.Path]::GetPathRoot($full)
+        $relative = $full.Substring($root.Length)
+        $segments = @($relative -split '[\\/]')
+        $current = $root
+        for ($index = 0; $index -lt $segments.Length; $index++) {
+            if ([string]::IsNullOrEmpty($segments[$index])) { continue }
+            $current = [System.IO.Path]::Combine($current, $segments[$index])
+            $entry = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+            if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { return $false }
+        }
+        return $true
+    } catch { return $false }
+}
+
 function Resolve-ExtensionIconPath {
     param($Manifest, [string]$BasePath)
     try {
@@ -107,7 +131,7 @@ function Resolve-ExtensionIconPath {
         }
         foreach ($candidate in @($iconCandidates | Sort-Object Size -Descending)) {
             $candidatePath = Get-SafeChildPath -BasePath $BasePath -RelativePath $candidate.RelativePath
-            if (-not [string]::IsNullOrWhiteSpace($candidatePath) -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+            if ((Test-LocalExtensionIconPath -Path $candidatePath) -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
                 $item = Get-Item -LiteralPath $candidatePath -ErrorAction SilentlyContinue
                 if ($null -ne $item) { return $item.FullName }
             }
@@ -131,7 +155,7 @@ function Resolve-FirefoxIconPath {
             $candidate = $candidateValue
             if ($candidate -match '^file:///(.*)$') {
                 $candidate = [System.Uri]::UnescapeDataString($matches[1]) -replace '/', '\'
-                if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                if ((Test-LocalExtensionIconPath -Path $candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
                     $item = Get-Item -LiteralPath $candidate -ErrorAction SilentlyContinue
                     if ($null -ne $item) { return $item.FullName }
                 }
@@ -139,14 +163,14 @@ function Resolve-FirefoxIconPath {
             }
             if ($candidate -match '^(jar:|resource:|chrome:|moz-extension:)') { continue }
             if ([System.IO.Path]::IsPathRooted($candidate)) {
-                if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                if ((Test-LocalExtensionIconPath -Path $candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
                     $item = Get-Item -LiteralPath $candidate -ErrorAction SilentlyContinue
                     if ($null -ne $item) { return $item.FullName }
                 }
                 continue
             }
             $candidatePath = Get-SafeChildPath -BasePath $ProfilePath -RelativePath $candidate
-            if (-not [string]::IsNullOrWhiteSpace($candidatePath) -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+            if ((Test-LocalExtensionIconPath -Path $candidatePath) -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
                 $item = Get-Item -LiteralPath $candidatePath -ErrorAction SilentlyContinue
                 if ($null -ne $item) { return $item.FullName }
             }
@@ -282,7 +306,7 @@ function Resolve-ChromiumConfiguredExtensionPath {
 
     foreach ($candidateValue in @($candidates | Select-Object -Unique)) {
         $candidate = [string]$candidateValue
-        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+        if ((Test-LocalExtensionIconPath -Path $candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
             if ((Split-Path $candidate -Leaf) -ne 'manifest.json') { continue }
             $candidate = Split-Path $candidate -Parent
         }

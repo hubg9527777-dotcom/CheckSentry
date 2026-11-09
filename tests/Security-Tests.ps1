@@ -21,6 +21,9 @@ Assert-Rejected { Get-GoogleSheetsExportUrl -Url 'https://docs.google.com:444/sp
 Assert-Security ((ConvertTo-SafeNoteHtml -Text '<img src=x onerror=alert(1)>' -Link 'javascript:alert(1)') -notmatch '<img|href=.javascript:') 'Note HTML injection.'
 Assert-Security (-not (Test-LocalSoftwareIconPath -Path '\\attacker.test\share\icon.ico')) 'UNC icon path accepted.'
 Assert-Security ((Get-LocalIconDataUri -Path '\\attacker.test\share\icon.ico') -eq '') 'UNC icon read accepted.'
+Assert-Security (-not (Test-LocalExtensionIconPath -Path '\\attacker.test\share\icon.ico')) 'Browser extension UNC icon accepted.'
+Assert-Security (-not (Test-LocalExtensionIconPath -Path '\\?\UNC\attacker.test\share\icon.ico')) 'Browser extension device UNC icon accepted.'
+Assert-Security (-not (Test-LocalExtensionIconPath -Path 'file:///C:/sensitive/icon.ico')) 'Browser extension URL icon accepted as a disk path.'
 
 $main = Get-Content -LiteralPath (Join-Path $root 'Start-ComplianceCheck.ps1') -Raw -Encoding UTF8
 Assert-Security ($main -match '\$request.AllowAutoRedirect = \$false') 'Cloud download must validate every redirect.'
@@ -70,6 +73,7 @@ try {
         }
     } finally { $zip.Dispose() }
     Assert-Rejected { Assert-XlsxArchiveComplete -Path $zipPath } 'XLSX DTD/entity payload accepted.'
+    Assert-Rejected { Import-CloudRuleSheets -Path $zipPath } 'Cloud rule snapshot bypassed XLSX preflight.'
     $oversizedJson = Join-Path $fixture 'oversized.json'
     $stream = [IO.File]::Create($oversizedJson)
     try { $stream.SetLength(33554433) } finally { $stream.Dispose() }

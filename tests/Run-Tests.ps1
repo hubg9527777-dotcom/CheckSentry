@@ -5,7 +5,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $failures = New-Object System.Collections.Generic.List[string]
 function Assert-True([bool]$Condition, [string]$Message) { if (-not $Condition) { $failures.Add($Message) } }
 
-foreach ($scriptName in @('Start-ComplianceCheck.ps1','Get-InstalledSoftware.ps1','Get-InstalledExtensions.ps1')) {
+foreach ($scriptName in @('Start-ComplianceCheck.ps1','Get-InstalledSoftware.ps1','Get-InstalledExtensions.ps1','Get-ExecutionHistory.ps1')) {
     $tokens = $null; $errors = $null
     $null = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $root $scriptName), [ref]$tokens, [ref]$errors)
     Assert-True ($errors.Count -eq 0) "$scriptName 存在 PowerShell 语法错误：$($errors -join '; ')"
@@ -14,6 +14,132 @@ foreach ($scriptName in @('Start-ComplianceCheck.ps1','Get-InstalledSoftware.ps1
 . (Join-Path $root 'Start-ComplianceCheck.ps1') -LibraryOnly
 . (Join-Path $root 'Get-InstalledSoftware.ps1')
 . (Join-Path $root 'Get-InstalledExtensions.ps1')
+
+# 1.2.0: execution evidence must not pollute the installed-software inventory.
+$testHistory = [PSCustomObject]@{
+    Software = @(); Chromium = @(); Firefox = @()
+    Execution = @(
+        [PSCustomObject]@{ Kind='EXE'; Name='TESTPORTABLE.EXE'; Path=''; PathEvidence='未知'; PathVerified=$false; PfHash='12345678'; RunCount=2; Times=@([datetime]'2026-11-07T14:00:00'); Source='Prefetch'; FileExists=$false },
+        [PSCustomObject]@{ Kind='脚本'; Name='run.bat'; Path=''; PathEvidence='4688'; PathVerified=$true; PfHash=''; RunCount=0; Times=@([datetime]'2026-11-07T14:01:00'); Source='4688'; FileExists=$false },
+        [PSCustomObject]@{ Kind='TXT'; Name='report.txt'; Path=''; PathEvidence=''; PathVerified=$false; PfHash=''; RunCount=0; Times=@(); Source='Prefetch'; FileExists=$false }
+    )
+    ExecutionSources = @([PSCustomObject]@{ Source='Prefetch'; Status='完成'; Message='测试数据' })
+}
+$testHistoryRows = @(Get-ExecutionAuditRows -Inventory $testHistory -AllRules @{ '黑名单'=@(); '白名单'=@(); '待定'=@() })
+Assert-True ($testHistoryRows.Count -eq 2) '执行审计只接收 EXE 与已识别的 BAT/CMD，不收 TXT 文档。'
+Assert-True (@($testHistoryRows | Where-Object Name -eq 'report.txt').Count -eq 0) 'TXT 不能出现在历史执行审计结果。'
+Assert-True (@($testHistoryRows | Where-Object RevealKey).Count -eq 0) '没有已确认可访问路径时不得提供定位操作。'
+
+# 1.2.0 cloud rule unification: only 软件 and 浏览器扩展 are new canonical business types.
+Assert-True ((Get-CanonicalRuleItemType 'Chromium插件') -eq '浏览器扩展') '旧 Chromium 类型必须兼容为浏览器扩展。'
+Assert-True ((Get-CanonicalRuleItemType 'Firefox插件') -eq '浏览器扩展') '旧 Firefox 类型必须兼容为浏览器扩展。'
+Assert-True ((Get-CanonicalRuleItemType '软件') -eq '软件') '安装与历史运行软件必须共用软件类型。'
+Assert-True ((Get-RuleIdentity -ItemType 'Chromium插件' -ExtensionId 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -NamePattern 'Unified') -eq (Get-RuleIdentity -ItemType '浏览器扩展' -ExtensionId 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -NamePattern 'Unified')) '旧插件 ID 规则与新浏览器扩展规则身份必须一致。'
+Assert-True ((Get-RuleIdentity -ItemType '浏览器扩展' -ExtensionId '' -NamePattern 'Plugin One') -ne (Get-RuleIdentity -ItemType '浏览器扩展' -ExtensionId '' -NamePattern 'Plugin Two')) '名称型扩展规则不能因插件 ID 都为空而被错误去重。'
+$legacyFirefoxRule = [PSCustomObject]@{ 类型='Firefox插件'; 插件ID='example-plugin@example.org'; 匹配方式='插件ID精确'; 软件名关键词='Shared Browser Extension'; 版本号=''; 发布者='' }
+$newFirefoxTypeRule = Convert-InputToRule -Data ([PSCustomObject]@{ type='浏览器扩展'; extId='shared@example.org'; matchType='插件ID精确'; namePattern='Shared Browser Extension'; version=''; publisher=''; note='' }) -TargetSheet '白名单'
+Assert-True ($newFirefoxTypeRule.类型 -eq '浏览器扩展' -and $newFirefoxTypeRule.插件ID -eq 'shared@example.org') '浏览器扩展应接受 Firefox 风格 ID，且类型不再按浏览器拆分。'
+$oldChromiumTypeRule = Convert-InputToRule -Data ([PSCustomObject]@{ type='Chromium插件'; extId='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'; matchType='插件ID精确'; namePattern='Legacy Chromium'; version=''; publisher=''; note='' }) -TargetSheet '白名单'
+Assert-True ($oldChromiumTypeRule.类型 -eq '浏览器扩展') '旧 Chromium 类型应该在导入时自动转为统一业务类型。'
+
+$crossBrowserRuleMatcher = New-RuleMatcher -Rules @($legacyFirefoxRule) -ItemType '浏览器扩展'
+Assert-True ($null -ne (Find-FirstMatchingRule -Rules $crossBrowserRuleMatcher -ItemType '浏览器扩展' -DisplayName 'Shared Browser Extension' -Publisher '' -ExtensionId 'example-plugin@example.org' -Version '2.0')) '统一规则应当识别旧 Firefox 插件 ID。'
+Assert-True ($null -eq (Find-FirstMatchingRule -Rules $crossBrowserRuleMatcher -ItemType '浏览器扩展' -DisplayName 'Shared Browser Extension' -Publisher '' -ExtensionId 'someone-else@example.org' -Version '2.0')) '同名不同 ID 不得被插件 ID 精确规则误放行。'
+$unifiedExtensionRules = @([PSCustomObject]@{ 类型='浏览器扩展'; 插件ID='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, shared@example.org'; 匹配方式='插件ID精确'; 软件名关键词='Shared Ext'; 版本号=''; 发布者='' })
+Assert-True ($null -ne (Find-FirstMatchingRule -Rules (New-RuleMatcher -Rules $unifiedExtensionRules -ItemType '浏览器扩展') -ItemType '浏览器扩展' -DisplayName 'Shared Ext' -Publisher '' -ExtensionId 'shared@example.org' -Version '1.0')) '同一条浏览器扩展规则允许关联多个平台的准确 ID。'
+$historyRules = @{
+    '黑名单' = @([PSCustomObject]@{ id='1'; 类型='软件'; 插件ID=''; 匹配方式='精确'; 软件名关键词='BlockedTool'; 发布者=''; 版本号=''; '备注/原因'='公司禁用' })
+    '白名单' = @([PSCustomObject]@{ id='2'; 类型='软件'; 插件ID=''; 匹配方式='精确'; 软件名关键词='ApprovedTool'; 发布者=''; 版本号=''; '备注/原因'='公司批准' })
+    '待定' = @([PSCustomObject]@{ id='3'; 类型='软件'; 插件ID=''; 匹配方式='精确'; 软件名关键词='PendingTool'; 发布者=''; 版本号=''; '备注/原因'='待复核' })
+}
+$testItems = @('BlockedTool.exe', 'ApprovedTool.exe', 'PendingTool.exe') | ForEach-Object {
+    [PSCustomObject]@{ Kind='EXE'; Name=$_; Path=''; PathEvidence='BAM'; PathVerified=$false; PfHash=''; RunCount=0; Times=@([datetime]'2026-11-07T14:00:00'); Source='BAM'; FileExists=$false }
+}
+$historyResult = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=@(); Execution=$testItems }) -AllRules $historyRules)
+$restrictedHistoryRules = @{
+    '黑名单' = @([PSCustomObject]@{ id='4'; 类型='软件'; 插件ID=''; 匹配方式='精确'; 软件名关键词='BlockedTool'; 发布者='Confirmed Publisher'; 版本号=''; '备注/原因'='' })
+    '白名单' = @(); '待定' = @()
+}
+$publisherLead = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=@(); Execution=@($testItems[0]) }) -AllRules $restrictedHistoryRules)
+Assert-True ($publisherLead.Count -eq 1 -and $publisherLead[0].Status -match '发布者待核实' -and $publisherLead[0].PolicySheet -eq '黑名单线索') '历史只有名称、无法确认发布者时应保留黑名单同名线索，不能确认为违规。'
+
+Assert-True (@($historyResult | Where-Object { $_.Name -eq 'BlockedTool.exe' -and $_.PolicySheet -eq '黑名单' }).Count -eq 1) '历史运行 EXE 必须自动匹配软件黑名单。'
+Assert-True (@($historyResult | Where-Object { $_.Name -eq 'ApprovedTool.exe' -and $_.PolicySheet -eq '白名单' }).Count -eq 1) '历史运行 EXE 必须自动匹配软件白名单。'
+Assert-True (@($historyResult | Where-Object { $_.Name -eq 'PendingTool.exe' -and $_.PolicySheet -eq '待定' }).Count -eq 1) '历史运行 EXE 必须自动匹配软件待定规则。'
+Assert-True (@($historyResult | Where-Object { $_.PolicySheet -eq '黑名单' -and $_.PathVerified }).Count -eq 0) '无法验证历史路径时，不能伪称路径已被验证。'
+
+# Folder priority affects presentation ONLY, not cloud classification or evidence certainty.
+$folderEvidence = @(
+    [PSCustomObject]@{ Kind='EXE'; Name='TEST-DOWNLOAD.EXE'; Path=(Join-Path $env:USERPROFILE 'Downloads\TEST-DOWNLOAD.EXE'); PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@([datetime]'2026-11-06T13:00:00'); Source='BAM'; FileExists=$false },
+    [PSCustomObject]@{ Kind='EXE'; Name='TEST-D-DRIVE.EXE'; Path='D:\Tools\TEST-D-DRIVE.EXE'; PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@([datetime]'2026-11-07T13:00:00'); Source='BAM'; FileExists=$false },
+    [PSCustomObject]@{ Kind='EXE'; Name='TEST-SYSTEM.EXE'; Path=(Join-Path $env:WINDIR 'System32\TEST-SYSTEM.EXE'); PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@([datetime]'2026-11-08T13:00:00'); Source='BAM'; FileExists=$false }
+)
+$folderRows = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=@(); Execution=$folderEvidence }) -AllRules @{ '黑名单'=@(); '白名单'=@(); '待定'=@() })
+$downloadRank = [int](@($folderRows | Where-Object Name -eq 'TEST-DOWNLOAD.EXE')[0].LocationRank)
+$otherDiskRank = [int](@($folderRows | Where-Object Name -eq 'TEST-D-DRIVE.EXE')[0].LocationRank)
+$systemRank = [int](@($folderRows | Where-Object Name -eq 'TEST-SYSTEM.EXE')[0].LocationRank)
+Assert-True ($downloadRank -lt $otherDiskRank -and $otherDiskRank -lt $systemRank) '历史位置排序应优先下载目录，再其他磁盘，最后系统目录。'
+Assert-True (@($folderRows | Where-Object { $_.PolicySheet }).Count -eq 0) '文件位置本身不能制造任何黑白名单命中。'
+$folderHtml = Get-ExecutionAuditHtml -Inventory ([PSCustomObject]@{ Software=@(); Execution=$folderEvidence; ExecutionSources=@() }) -AllRules @{ '黑名单'=@(); '白名单'=@(); '待定'=@() } -HistoryRows $folderRows -InstalledResults @()
+Assert-True ($folderHtml.Contains('exec-row-chk') -and $folderHtml.Contains('data-history-batch-status')) '历史表格必须支持与原软件一致的勾选和批量操作。'
+Assert-True ($folderHtml.Contains('name=') -and $folderHtml.Contains('exec-rule-fields')) '历史表格必须提供原有规则字段。'
+
+# Strict installed-vs-history deduplication: same executable instance only, NEVER same name alone.
+$dedupRoot = Join-Path ([IO.Path]::GetTempPath()) ('CheckSentry-Dedup-' + [guid]::NewGuid().ToString('N'))
+try {
+    $installedFolder = Join-Path $dedupRoot 'AnyDesk'
+    $portableFolder = Join-Path $dedupRoot 'Portable'
+    $nestedFolder = Join-Path $installedFolder 'Portable'
+    foreach ($directory in @($installedFolder,$portableFolder,$nestedFolder)) {
+        $null = New-Item -ItemType Directory -Path $directory -Force
+    }
+    $installedExe = Join-Path $installedFolder 'AnyDesk.exe'
+    $portableExe = Join-Path $portableFolder 'AnyDesk.exe'
+    $nestedExe = Join-Path $nestedFolder 'AnyDesk.exe'
+    foreach ($sample in @($installedExe,$portableExe,$nestedExe)) {
+        [IO.File]::WriteAllBytes($sample, [byte[]]@(0x01,0x02,0x03)) # Synthetic fixture; do not execute.
+    }
+    $installedApp = [PSCustomObject]@{
+        名称='AnyDesk'; 版本='1.0'; 发布者='AnyDesk Software'; 安装路径=$installedFolder;
+        图标路径=''; 图标来源=''
+    }
+    $fixtureRules = @{ '黑名单'=@(); '白名单'=@(); '待定'=@() }
+    $now = [datetime]'2026-11-08T11:00:00'
+    $fixtureEvents = @(
+        [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=$installedExe; PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@($now); Source='BAM'; FileExists=$true },
+        [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=$portableExe; PathEvidence='4688'; PathVerified=$true; PfHash=''; RunCount=0; Times=@($now.AddMinutes(-20)); Source='4688'; FileExists=$true },
+        [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=$nestedExe; PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@($now.AddMinutes(-30)); Source='BAM'; FileExists=$true },
+        [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=''; PathEvidence='Prefetch'; PathVerified=$false; PfHash='FAKE1234'; RunCount=1; Times=@($now.AddMinutes(-40)); Source='Prefetch'; FileExists=$false }
+    )
+    $fixtureInventory = [PSCustomObject]@{ Software=@($installedApp); Execution=$fixtureEvents; ExecutionSources=@() }
+    $fixtureRows = @(Get-ExecutionAuditRows -Inventory $fixtureInventory -AllRules $fixtureRules)
+    Assert-True ($fixtureRows.Count -eq 4) '四种不同路径/未知路径的历史线索不得按名称去重。'
+    Assert-True (@($fixtureRows | Where-Object { $_.Path -eq $installedExe -and $_.InstalledMatchKey }).Count -eq 1) '与安装目录同路径且确有文件的历史 EXE 应被关联。'
+    Assert-True (@($fixtureRows | Where-Object { $_.Path -eq $portableExe -and -not $_.InstalledMatchKey }).Count -eq 1) '单独 Portable 路径即使与安装版同名也必须保留。'
+    Assert-True (@($fixtureRows | Where-Object { $_.Path -eq $nestedExe -and -not $_.InstalledMatchKey }).Count -eq 1) '安装目录内独立 Portable 子目录不得被隐藏。'
+    Assert-True (@($fixtureRows | Where-Object { -not $_.Path -and -not $_.InstalledMatchKey }).Count -eq 1) '无法验证路径时绝不按名称合并。'
+    $softwareResult = [PSCustomObject]@{ 名称='AnyDesk'; 版本='1.0'; 发布者='AnyDesk Software'; 安装路径=$installedFolder; 类型='软件' }
+    Add-CheckSentryHistorySummaryToInstalledResults -Results @($softwareResult) -HistoryRows $fixtureRows
+    Assert-True ([string]$softwareResult.HistoryEvidenceSummary -match 'BAM') '关联证据应显示在原安装软件行，不得丢失。'
+    $renderedHistory = Get-ExecutionAuditHtml -Inventory $fixtureInventory -AllRules $fixtureRules -HistoryRows $fixtureRows -InstalledResults @($softwareResult)
+    Assert-True ($renderedHistory -match '已将 1 条' -and $renderedHistory -match '全部 3') '已安装的同一路径记录只隐藏一行，其他三个实例保留。'
+    Assert-True ($renderedHistory.IndexOf('① 黑名单') -lt $renderedHistory.IndexOf('② 未确认') -and
+        $renderedHistory.IndexOf('② 未确认') -lt $renderedHistory.IndexOf('③ 白名单')) '历史审计分组顺序应为黑名单、待核实、白名单。'
+
+    $undetermined = [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=$installedExe; PathEvidence='Prefetch 未验证'; PathVerified=$false; PfHash='ABC12345'; RunCount=1; Times=@($now); Source='Prefetch'; FileExists=$true }
+    $unknownRows = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=@($installedApp); Execution=@($undetermined) }) -AllRules $fixtureRules)
+    Assert-True ($unknownRows.Count -eq 1 -and -not $unknownRows[0].InstalledMatchKey) 'Prefetch 候选路径不能单独触发自动关联。'
+    $deleted = [PSCustomObject]@{ Kind='EXE'; Name='AnyDesk.exe'; Path=$installedExe; PathEvidence='BAM'; PathVerified=$true; PfHash=''; RunCount=0; Times=@($now); Source='BAM'; FileExists=$false }
+    Remove-Item -LiteralPath $installedExe -Force
+    $deletedRows = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=@($installedApp); Execution=@($deleted) }) -AllRules $fixtureRules)
+    Assert-True ($deletedRows.Count -eq 1 -and -not $deletedRows[0].InstalledMatchKey) '文件已删除不得证明与当前安装程序同一实例。'
+    $ambiguousApps = @($installedApp, [PSCustomObject]@{ 名称='AnyDesk'; 版本='2.0'; 发布者='Second Vendor'; 安装路径=$installedFolder; 图标路径=''; 图标来源='' })
+    [IO.File]::WriteAllBytes($installedExe, [byte[]]@(0x01))
+    $ambiguousRows = @(Get-ExecutionAuditRows -Inventory ([PSCustomObject]@{ Software=$ambiguousApps; Execution=@($fixtureEvents[0]) }) -AllRules $fixtureRules)
+    Assert-True ($ambiguousRows.Count -eq 1 -and -not $ambiguousRows[0].InstalledMatchKey) '安装清单出现多个可能归属时，不得选择其中一个强制合并。'
+} finally {
+    if (Test-Path -LiteralPath $dedupRoot -PathType Container) { Remove-Item -LiteralPath $dedupRoot -Recurse -Force }
+}
 
 # Special search uses the unclassified inventory, including items already on a whitelist.
 $specialInventory = [PSCustomObject]@{
@@ -222,7 +348,7 @@ $script:InventoryCache = $null
 $script:InventoryScanError = ''
 $script:InventoryScanResults = @{}
 $script:InventoryScanJobs = @{}
-foreach ($kind in @('Software','Chromium','Firefox')) {
+foreach ($kind in @('Software','Chromium','Firefox','Execution')) {
     $job = Start-Job -ArgumentList $kind -ScriptBlock { param($Kind); [PSCustomObject]@{ Kind=$Kind; Items=@([PSCustomObject]@{ Name=$Kind }) } }
     $script:InventoryScanJobs[$kind] = [PSCustomObject]@{ Job=$job; Received=$false }
 }

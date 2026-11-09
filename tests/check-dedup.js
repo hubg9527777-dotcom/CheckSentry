@@ -1,0 +1,21 @@
+// Targeted static regression checks, no live PowerShell environment required.
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+const root = path.join(__dirname, '..');
+const code = fs.readFileSync(path.join(root, 'Start-ComplianceCheck.ps1'), 'utf8');
+const report = fs.readFileSync(path.join(root, 'report_template.html'), 'utf8');
+const tests = fs.readFileSync(path.join(__dirname, 'Run-Tests.ps1'), 'utf8');
+assert(code.includes('function Find-CheckSentryInstalledExecutionAssociation'), 'precise installed association missing');
+assert(code.includes('-not [bool]$Entry.PathVerified -or -not [bool]$Entry.FileExists'), 'unverified or missing executables must never be hidden');
+assert(code.includes("$identities.Count -ne 1"), 'ambiguous install associations must not auto-merge');
+assert(code.includes('InstalledMatchKey = if'), 'history must retain link to installed inventory');
+assert(code.includes('Add-CheckSentryHistorySummaryToInstalledResults'), 'installed item must display preserved execution evidence');
+assert(code.includes("$installedKeys.ContainsKey([string]$_.InstalledMatchKey)"), 'hide only when linked installed item is really in report');
+assert(code.includes("$group = 'review'") && code.includes("$group = 'white'"), 'history grouping missing');
+assert(code.includes('data-group=') && report.includes('details.exec-group'), 'expandable grouped UI missing');
+assert(report.includes('group.dataset.group') && report.includes("group.open = matched > 0"), 'history UI group controls missing');
+assert(tests.includes('单独 Portable 路径即使与安装版同名也必须保留'), 'portable regression test missing');
+assert(tests.includes('多个可能归属'), 'ambiguous identity test missing');
+assert(!/Get-CheckSentryPecmdEvidence|Start-Process[^\n]*PECmd/i.test(code), 'PECmd may not auto-execute');
+console.log('CheckSentry 1.2.0 deduplication and priority grouping static checks passed.');

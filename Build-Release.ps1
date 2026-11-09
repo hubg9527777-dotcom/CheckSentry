@@ -1,5 +1,5 @@
 ﻿param(
-    [string]$Version = '1.1.5',
+    [string]$Version = '1.2.0',
     [ValidateSet('win-x64')][string[]]$Runtime = @('win-x64'),
     [string]$CertificatePath = '',
     [string]$CertificatePassword = '',
@@ -10,6 +10,8 @@
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 if ($Version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { throw '版本号格式无效。' }
+# Product version is locked by the project owner; SDK security patches do not change this.
+if ($Version -cne '1.2.0') { throw 'CheckSentry 版本已锁定为 1.2.0；必须取得开发者明确授权才能修改。' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $root 'dist' }
 $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 $rootFull = [System.IO.Path]::GetFullPath($root).TrimEnd('\', '/')
@@ -23,7 +25,7 @@ $moduleManifest = Join-Path $root 'Modules\ImportExcel\7.8.10\ImportExcel.psd1'
 if (-not (Test-Path -LiteralPath $moduleManifest -PathType Leaf)) { throw '缺少随包 ImportExcel 7.8.10，请先运行 Prepare-Dependencies.ps1。' }
 if ([string]::IsNullOrWhiteSpace($DotNetPath)) {
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
-    if ($null -eq $dotnetCommand) { throw '未找到 .NET 8 SDK。' }
+    if ($null -eq $dotnetCommand) { throw '未找到 .NET 10 SDK（需 10.0.403 或更新的 10.0 SDK）。' }
     $DotNetPath = $dotnetCommand.Source
 }
 if (-not (Test-Path -LiteralPath $DotNetPath -PathType Leaf)) { throw "dotnet 路径无效：$DotNetPath" }

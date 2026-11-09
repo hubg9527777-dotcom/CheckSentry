@@ -21,7 +21,7 @@ $global:OutputEncoding = $script:Utf8ConsoleEncoding
 
 $ErrorActionPreference = 'Stop'
 $script:AllowedSheets = @('白名单', '待定', '黑名单')
-$script:AllowedItemTypes = @('软件', 'Chromium插件', 'Firefox插件')
+$script:AllowedItemTypes = @('软件', '浏览器扩展')
 $script:AllowedMatchTypes = @('插件ID精确', '精确', '包含', '通配符', '正则')
 $script:LastUndoSnapshot = $null
 $script:InventoryCache = $null
@@ -37,6 +37,7 @@ $script:InventoryScanJobs = @{}
 $script:InventoryScanResults = @{}
 $script:InventoryScanError = ''
 $script:InventoryScanStartedAt = $null
+$script:ApprovedRevealPaths = @{}
 $script:DataDirectory = $PSScriptRoot
 $script:CloudSyncState = [PSCustomObject]@{
     Configured = $false
@@ -86,31 +87,20 @@ function Initialize-ImportExcel {
             throw "随包提供的 ImportExcel $requiredVersion 加载失败：$($_.Exception.Message)"
         }
     }
-    $available = Get-Module -ListAvailable -Name ImportExcel |
-        Where-Object { $_.Version -eq $requiredVersion } |
-        Select-Object -First 1
-    if ($null -eq $available) {
-        Write-Host "未找到已验证的 ImportExcel $requiredVersion，正在安装到当前用户..." -ForegroundColor Yellow
-        try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-            $nuget = Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($null -eq $nuget) {
-                Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force -ErrorAction Stop | Out-Null
-            }
-            Install-Module ImportExcel -RequiredVersion $requiredVersion -Repository PSGallery -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
-        } catch {
-            throw "无法安装 ImportExcel $requiredVersion。请联网后手动执行 Install-Module ImportExcel -RequiredVersion $requiredVersion -Scope CurrentUser。详细错误：$($_.Exception.Message)"
-        }
-    }
-    try {
-        Import-Module ImportExcel -RequiredVersion $requiredVersion -Force -ErrorAction Stop
-        foreach ($commandName in @('Open-ExcelPackage', 'Close-ExcelPackage')) {
-            if ($null -eq (Get-Command $commandName -ErrorAction SilentlyContinue)) {
-                throw "ImportExcel 缺少命令 $commandName"
-            }
-        }
-    } catch {
-        throw "ImportExcel $requiredVersion 加载失败：$($_.Exception.Message)"
+    throw "随包 ImportExcel $requiredVersion 缺失。为保护审计电脑，CheckSentry 不会自动安装 NuGet 提供者或从 PowerShell Gallery 下载第三方依赖。请重新获取经过审核的完整发布包。"
+}
+
+# 两种业务类型：旧版 Chromium / Firefox 规则在读取时兼容，不更改云端原文件。
+function Get-CanonicalRuleItemType {
+    param([object]$Value)
+    $type = ([string]$Value).Trim()
+    switch ($type) {
+        'Chromium插件' { return '浏览器扩展' }
+        'Firefox插件' { return '浏览器扩展' }
+        '浏览器扩展' { return '浏览器扩展' }
+        '软件' { return '软件' }
+        '' { return '软件' } # 兼容历史缺省类型；新增规则仍要求类型必填。
+        default { return $type }
     }
 }
 
@@ -240,7 +230,7 @@ function Convert-RuleSheetToCanonical {
             $noteOrReason = Get-UserNoteText (Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('备注/原因', '备注', '禁止原因'))
             $record = [ordered]@{
                 id = Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('id')
-                类型 = Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('类型')
+                类型 = Get-CanonicalRuleItemType (Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('类型'))
                 插件ID = Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('插件ID')
                 匹配方式 = Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('匹配方式')
                 软件名关键词 = Get-RuleSheetCellValue -Worksheet $worksheet -HeaderMap $headerMap -Row $row -Names @('软件名关键词')
@@ -289,6 +279,12 @@ function Test-WorkbookCanonicalSchema {
             for ($column = 1; $column -le $headers.Count; $column++) {
                 if ([string]($worksheet.Cells[1, $column].Text) -ne $headers[$column - 1]) { return $true }
             }
+            if ($worksheet.Dimension.End.Row -ge 2) {
+                for ($row = 2; $row -le $worksheet.Dimension.End.Row; $row++) {
+                    $oldType = ([string]$worksheet.Cells[$row, 2].Value).Trim()
+                    if ($oldType -in @('Chromium插件','Firefox插件')) { return $true }
+                }
+            }
             if ($worksheet.Dimension.End.Column -gt $headers.Count) {
                 for ($column = $headers.Count + 1; $column -le $worksheet.Dimension.End.Column; $column++) {
                     for ($row = 1; $row -le $worksheet.Dimension.End.Row; $row++) {
@@ -331,9 +327,9 @@ function Repair-WorkbookSchema {
 function Ensure-CanonicalWorkbookSchema {
     param([string]$Path)
     if (Test-WorkbookCanonicalSchema -Path $Path) {
-        Write-Host "检测到旧版清单字段，正在安全统一三张规则表：$Path" -ForegroundColor Yellow
+        Write-Host "检测到旧版规则字段或类型，正在安全统一三张规则表：$Path" -ForegroundColor Yellow
         Repair-WorkbookSchema -Path $Path
-        Write-Host "清单字段已统一为状态/分类与备注/原因：$Path" -ForegroundColor Green
+        Write-Host "清单字段和类型已统一（软件/浏览器扩展）：$Path" -ForegroundColor Green
     }
 }
 
@@ -434,6 +430,10 @@ function Assert-WorkbookPackageSchema {
                         if (-not [string]::IsNullOrWhiteSpace([string]($worksheet.Cells[$row, $column].Value))) { $rowHasValue = $true; break }
                     }
                     if ($rowHasValue) {
+                        $rowType = Get-CanonicalRuleItemType $worksheet.Cells[$row, 2].Value
+                        if ($script:AllowedItemTypes -notcontains $rowType) {
+                            throw "工作表【$sheetName】第 $row 行类型无效：$rowType。请改为软件或浏览器扩展，避免静默漏判。"
+                        }
                         $id = [string]($worksheet.Cells[$row, 1].Value)
                         if ($id -notmatch '^\d{1,10}$') { throw "工作表【$sheetName】第 $row 行规则 ID 无效。" }
                         if ($seenIds.ContainsKey($id)) { throw "工作表【$sheetName】存在重复规则 ID：$id。" }
@@ -670,7 +670,7 @@ function Convert-WorksheetToRules {
             $ordered[$headers[$column - 1]] = $value
 
         }
-        if ($hasValue) { $rules += [PSCustomObject]$ordered }
+        if ($hasValue) { $ordered['类型'] = Get-CanonicalRuleItemType $ordered['类型']; $rules += [PSCustomObject]$ordered }
     }
     return $rules
 }
@@ -823,6 +823,8 @@ function Convert-CloudWorksheetToRules {
 
 function Import-CloudRuleSheets {
     param([string]$Path)
+    # 云端规则缓存/历史快照可能在下载后被替换；每次交给旧版 EPPlus 前先验证。
+    Assert-XlsxArchiveComplete -Path $Path
     $lastError = $null
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         $package = $null
@@ -958,6 +960,8 @@ function Invoke-WorkbookTransaction {
         $fingerprintBefore = Get-FileFingerprint -Path $Path
         if ($CreateUndo) { $pendingSnapshot = New-UndoSnapshotFile -Path $Path }
         Copy-Item -LiteralPath $Path -Destination $temporaryPath -ErrorAction Stop
+        # 校验真正提交给 EPPlus 的临时副本，避免检查后原文件被替换的竞态。
+        Assert-XlsxArchiveComplete -Path $temporaryPath
         $package = Open-ExcelPackage -Path $temporaryPath -ErrorAction Stop
         Assert-WorkbookPackageSchema -Package $package
         $result = & $Operation $package
@@ -1268,6 +1272,16 @@ function Assert-XlsxArchiveComplete {
         $entryNames = @{}
         $buffer = New-Object byte[] 65536
         foreach ($entry in $archive.Entries) {
+            # XLSX is an OPC/ZIP container. Reject ambiguous part names *before* any
+            # downstream parser sees them. This also guards against future extractors
+            # accidentally treating attacker-supplied entries as filesystem paths.
+            $part = [string]$entry.FullName
+            if ([string]::IsNullOrWhiteSpace($part) -or $part.Length -gt 1024 -or
+                $part.StartsWith('/') -or $part.Contains('\') -or $part.Contains(':') -or
+                $part -match '[\x00-\x1F\x7F]' -or $part -match '(?:^|/)\.{1,2}(?:/|$)' -or
+                $part -match '//') {
+                throw 'XLSX 包含不安全或模糊的文件条目路径。'
+            }
             if ($entryNames.ContainsKey($entry.FullName)) { throw 'XLSX 包含重复文件条目。' }
             $entryNames[$entry.FullName] = $true
             $expandedBytes += [int64]$entry.Length
@@ -1331,7 +1345,7 @@ function Download-GoogleSheetsWorkbookOnce {
         $request.Timeout = 30000
         $request.ReadWriteTimeout = 30000
         $request.AllowAutoRedirect = $false
-        $request.UserAgent = 'CheckSentry/1.0.5'
+        $request.UserAgent = 'CheckSentry/1.2.0'
         $request.CachePolicy = New-Object System.Net.Cache.RequestCachePolicy -ArgumentList ([System.Net.Cache.RequestCacheLevel]::Reload)
         $request.Headers['Pragma'] = 'no-cache'
         $response = $request.GetResponse()
@@ -1407,7 +1421,7 @@ function Get-RuleDataSignature {
     param($Rule, [string]$SheetName)
     $data = [ordered]@{
         sheet = $SheetName
-        类型 = [string]$Rule.'类型'
+        类型 = Get-CanonicalRuleItemType $Rule.'类型'
         插件ID = [string]$Rule.'插件ID'
         匹配方式 = [string]$Rule.'匹配方式'
         软件名关键词 = [string]$Rule.'软件名关键词'
@@ -1650,7 +1664,7 @@ function Sync-CloudWorkbook {
                 if ($identitySet.ContainsKey($identity)) { throw "云端模板存在重复对象或跨表冲突：$identity" }
                 $identitySet[$identity] = $true
                 $effectiveRule = [PSCustomObject]([ordered]@{
-                    类型 = [string]$rule.'类型'
+                    类型 = Get-CanonicalRuleItemType $rule.'类型'
                     插件ID = [string]$rule.'插件ID'
                     匹配方式 = [string]$rule.'匹配方式'
                     软件名关键词 = [string]$rule.'软件名关键词'
@@ -1823,7 +1837,7 @@ function Convert-InputToRule {
 
     param($Data, [string]$TargetSheet)
     $sheet = Assert-AllowedSheet -SheetName $TargetSheet
-    $itemType = (Get-LimitedText -Value $Data.type -FieldName '类型' -MaximumLength 32 -Required).Trim()
+    $itemType = Get-CanonicalRuleItemType (Get-LimitedText -Value $Data.type -FieldName '类型' -MaximumLength 32 -Required)
     if ($script:AllowedItemTypes -notcontains $itemType) { throw "不允许的类型：$itemType" }
     $matchType = (Get-LimitedText -Value $Data.matchType -FieldName '匹配方式' -MaximumLength 32 -Required).Trim()
     if ($script:AllowedMatchTypes -notcontains $matchType) { throw "不允许的匹配方式：$matchType" }
@@ -1832,8 +1846,19 @@ function Convert-InputToRule {
     $namePattern = Get-LimitedText -Value $Data.namePattern -FieldName '软件名关键词' -MaximumLength 512 -Required
     if ($itemType -eq '软件' -and $matchType -eq '插件ID精确') { throw '软件规则不能使用插件ID精确。' }
     if ($matchType -eq '插件ID精确' -and [string]::IsNullOrWhiteSpace($extensionId)) { throw '插件ID精确规则必须填写插件ID。' }
-    if ($itemType -eq 'Chromium插件' -and $matchType -eq '插件ID精确' -and @($extensionIds | Where-Object { $_ -notmatch '^[a-p]{32}$' }).Count -gt 0) {
-        throw 'Chromium 插件ID必须是 32 位 a-p 字符；多个可信 ID 可用逗号、分号或换行分隔。'
+    # 同一规则可填写 Chrome/Edge 和 Firefox 的不同 ID；Chromium 的 32 位 a-p 限制不适用于 Firefox。
+    if ($itemType -eq '浏览器扩展' -and $matchType -eq '插件ID精确') {
+        if (@($extensionIds | Where-Object { $_ -match '^(?i:chrome-extension:|moz-extension:)' }).Count -gt 0) {
+            throw '插件ID请填写浏览器实际扩展 ID，不能填写未经识别的扩展页面 URL。'
+        }
+        # 对明确的旧 Chromium 类型依然检查 32 位 ID，避免旧错误规则悄悄变为有效。
+        if ([string]$Data.type -eq 'Chromium插件' -and
+            @($extensionIds | Where-Object { $_ -notmatch '^[a-p]{32}$' }).Count -gt 0) {
+            throw 'Chromium 插件ID必须是 32 位 a-p 字符；多个可信 ID 可用逗号分隔。'
+        }
+        if (@($extensionIds | Where-Object { $_ -match '^[a-p]{1,31}$' }).Count -gt 0) {
+            throw '检测到不足 32 位的 Chromium 风格插件 ID，请核实。Firefox 扩展请填写实际 ID（通常含 @ 或 UUID）。'
+        }
     }
     if ($matchType -eq '正则') {
         try {
@@ -1884,6 +1909,7 @@ function Get-RuleIdentity {
         [string]$Publisher = '',
         [string]$Version = ''
     )
+    $ItemType = Get-CanonicalRuleItemType $ItemType
     if ($ItemType -eq '软件') {
         $identityRule = [PSCustomObject]@{
             类型 = '软件'
@@ -1900,8 +1926,14 @@ function Get-RuleIdentity {
         $versionKey = $versionParts -join ','
         return (ConvertTo-Json -InputObject @('软件', $nameKey, $publisherKey, $versionKey) -Compress)
     }
-    $extensionIds = @(Get-CanonicalExtensionIds -Value $ExtensionId -ItemType $ItemType | Sort-Object -Unique)
-    return ($ItemType + '|' + ($extensionIds -join ','))
+    $canonicalType = Get-CanonicalRuleItemType $ItemType
+    $extensionIds = @(Get-CanonicalExtensionIds -Value $ExtensionId -ItemType $canonicalType | Sort-Object -Unique)
+    if ($extensionIds.Count -gt 0) { return ('浏览器扩展|id|' + ($extensionIds -join ',')) }
+    # 允许按名称定义跨浏览器通用规则，但不同名称不能因“插件ID为空”被错误合并。
+    return (ConvertTo-Json -InputObject @('浏览器扩展', 'name',
+        (ConvertTo-MatchComparableText $NamePattern).ToLowerInvariant(),
+        (ConvertTo-MatchComparableText $Publisher).ToLowerInvariant(),
+        (ConvertTo-MatchComparableText $Version).ToLowerInvariant()) -Compress)
 }
 
 function Get-WorksheetRowIdentity {
@@ -1909,7 +1941,7 @@ function Get-WorksheetRowIdentity {
     $headers = Get-ExpectedHeaders -SheetName $SheetName
     $map = @{}
     for ($column = 1; $column -le $headers.Count; $column++) { $map[$headers[$column - 1]] = [string]($Worksheet.Cells[$Row, $column].Value) }
-    $itemType = if ([string]::IsNullOrWhiteSpace($map['类型'])) { '软件' } else { $map['类型'] }
+    $itemType = Get-CanonicalRuleItemType $map['类型']
     return Get-RuleIdentity -ItemType $itemType -ExtensionId $map['插件ID'] -NamePattern $map['软件名关键词'] -Publisher $map['发布者'] -Version $map['版本号']
 }
 
@@ -2050,7 +2082,7 @@ function ConvertTo-CanonicalExtensionId {
     # 清除从网页、Google Sheets、地址栏复制时常见的不可见字符；插件 ID 本身不允许包含空白。
     $text = [regex]::Replace($text, '[\u0000-\u0020\u007F\u00A0\u200B-\u200F\u202A-\u202E\u2060\uFEFF]', '')
     $text = $text.Trim('"', "'")
-    if ($ItemType -eq 'Chromium插件' -and $text -match '^(?i:chrome-extension://)([a-p]{32})(?:/.*)?$') {
+    if ((Get-CanonicalRuleItemType $ItemType) -eq '浏览器扩展' -and $text -match '^(?i:chrome-extension://)([a-p]{32})(?:/.*)?$') {
         $text = $matches[1]
     }
     return $text.ToLowerInvariant()
@@ -2180,8 +2212,8 @@ function New-RuleMatcher {
     foreach ($rule in @($Rules)) {
         $entry = [PSCustomObject]@{ Order = $order; Rule = $rule }
         $order++
-        $ruleType = if ([string]::IsNullOrWhiteSpace([string]$rule.'类型')) { '软件' } else { [string]$rule.'类型' }
-        if ($ruleType -ne $ItemType) { continue }
+        $ruleType = Get-CanonicalRuleItemType $rule.'类型'
+        if ($ruleType -ne (Get-CanonicalRuleItemType $ItemType)) { continue }
         $effectiveRule = Get-EffectiveRuleMatchFields -Rule $rule
         $matchType = [string]$effectiveRule.MatchType
         if ($matchType -eq '插件ID精确') {
@@ -2213,8 +2245,8 @@ function Find-FirstMatchingRule {
         $candidateRules = @($candidateEntries | Sort-Object Order | ForEach-Object { $_.Rule })
     }
     foreach ($rule in $candidateRules) {
-        $ruleType = if ([string]::IsNullOrWhiteSpace([string]$rule.'类型')) { '软件' } else { [string]$rule.'类型' }
-        if ($ruleType -ne $ItemType) { continue }
+        $ruleType = Get-CanonicalRuleItemType $rule.'类型'
+        if ($ruleType -ne (Get-CanonicalRuleItemType $ItemType)) { continue }
         $testName = if ($rule.'匹配方式' -eq '插件ID精确') { $ExtensionId } else { $DisplayName }
         if (-not (Test-NameMatch -InstalledName $testName -Rule $rule)) { continue }
         if (-not $IgnorePublisher -and -not (Test-PublisherMatch -InstalledPublisher $Publisher -RulePublisher $rule.'发布者')) { continue }
@@ -2230,8 +2262,8 @@ function Find-BlacklistedPluginNameCollision {
     if ($ItemType -eq '软件' -or [string]::IsNullOrWhiteSpace($DisplayName)) { return $null }
     $installedName = ConvertTo-MatchComparableText $DisplayName
     foreach ($rule in @($Rules)) {
-        $ruleType = if ([string]::IsNullOrWhiteSpace([string]$rule.'类型')) { '软件' } else { [string]$rule.'类型' }
-        if ($ruleType -ne $ItemType -or [string]$rule.'匹配方式' -ne '插件ID精确') { continue }
+        $ruleType = Get-CanonicalRuleItemType $rule.'类型'
+        if ($ruleType -ne (Get-CanonicalRuleItemType $ItemType) -or [string]$rule.'匹配方式' -ne '插件ID精确') { continue }
         $ruleExtensionIds = @(Get-CanonicalExtensionIds -Value $rule.'插件ID' -ItemType $ruleType)
         $installedExtensionId = ConvertTo-CanonicalExtensionId -Value $ExtensionId -ItemType $ItemType
         if ($ruleExtensionIds -contains $installedExtensionId) { continue }
@@ -2249,8 +2281,8 @@ function Find-WhitelistedPluginNameCollision {
     $installedExtensionId = ConvertTo-CanonicalExtensionId -Value $ExtensionId -ItemType $ItemType
     $matches = @()
     foreach ($rule in @($Rules)) {
-        $ruleType = if ([string]::IsNullOrWhiteSpace([string]$rule.'类型')) { '软件' } else { [string]$rule.'类型' }
-        if ($ruleType -ne $ItemType -or [string]$rule.'匹配方式' -ne '插件ID精确') { continue }
+        $ruleType = Get-CanonicalRuleItemType $rule.'类型'
+        if ($ruleType -ne (Get-CanonicalRuleItemType $ItemType) -or [string]$rule.'匹配方式' -ne '插件ID精确') { continue }
         $ruleName = ConvertTo-MatchComparableText ([string]$rule.'软件名关键词')
         if (-not [string]::Equals($ruleName, $installedName, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
         $ruleExtensionIds = @(Get-CanonicalExtensionIds -Value $rule.'插件ID' -ItemType $ruleType)
@@ -2421,7 +2453,7 @@ function Add-NewPendingRules {
         $existingIdentities = Get-PackageIdentitySet -Package $package
         $pendingState = Get-WorksheetAppendState -Package $package -SheetName '待定'
         foreach ($item in $candidates) {
-            $itemType = [string]$item.类型
+            $itemType = Get-CanonicalRuleItemType $item.类型
             $identity = Get-RuleIdentity -ItemType $itemType -ExtensionId ([string]$item.插件ID) -NamePattern ([string]$item.名称) -Publisher ([string]$item.发布者) -Version ([string]$item.版本)
             if ($existingIdentities.ContainsKey($identity)) {
                 $existingRule = $existingIdentities[$identity]
@@ -2540,6 +2572,7 @@ function Start-InventoryScanJobs {
     $script:InventoryScanResults = @{}
     $script:InventoryScanError = ''
     $script:InventoryScanStartedAt = Get-Date
+    $script:ApprovedRevealPaths = @{}
     foreach ($cache in @($script:RuleIconCache, $script:RuleIconDataById, $script:ReportIconData, $script:IconSourceByKey, $script:IconKeyByIdentity)) {
         if ($null -ne $cache) { $cache.Clear() }
     }
@@ -2559,6 +2592,20 @@ function Start-InventoryScanJobs {
             param($RootPath, $IncludeSystemValue, $IncludeInactiveValue, $AllUsersValue)
             . (Join-Path $RootPath 'Get-InstalledExtensions.ps1')
             [PSCustomObject]@{ Kind = 'Firefox'; Items = @(Get-FirefoxExtensions -IncludeInactive:$IncludeInactiveValue -AllUsers:$AllUsersValue) }
+        } },
+        [PSCustomObject]@{ Kind = 'Execution'; Script = {
+            param($RootPath, $IncludeSystemValue, $IncludeInactiveValue, $AllUsersValue)
+            try {
+                . (Join-Path $RootPath 'Get-ExecutionHistory.ps1')
+                $report = Get-CheckSentryExecutionHistory
+                [PSCustomObject]@{ Kind = 'Execution'; Items = @($report.Items); Sources = @($report.Sources) }
+            } catch {
+                # Historical evidence is supplementary: do not silently call a partial scan "safe".
+                [PSCustomObject]@{
+                    Kind = 'Execution'; Items = @()
+                    Sources = @([PSCustomObject]@{ Source = '历史执行记录'; Status = '失败'; Found = 0; Parsed = 0; Failed = 0; Message = [string]$_.Exception.Message })
+                }
+            }
         } }
     )
     foreach ($specification in $specifications) {
@@ -2589,6 +2636,7 @@ function Update-InventoryScanState {
                 $payload = @(Receive-Job -Job $job -ErrorAction Stop) | Select-Object -Last 1
                 if ($null -eq $payload -or [string]$payload.Kind -ne $kind) { throw '后台扫描没有返回有效结果。' }
                 $script:InventoryScanResults[$kind] = @($payload.Items)
+                if ($kind -eq 'Execution') { $script:InventoryScanResults['ExecutionSources'] = @($payload.Sources) }
                 $entry.Received = $true
             } catch {
                 $script:InventoryScanError = "$kind 扫描结果读取失败：$($_.Exception.Message)"
@@ -2596,11 +2644,13 @@ function Update-InventoryScanState {
             }
         }
     }
-    if ($script:InventoryScanJobs.Count -eq 3 -and @($script:InventoryScanJobs.Values | Where-Object { -not $_.Received }).Count -eq 0) {
+    if ($script:InventoryScanJobs.Count -eq 4 -and @($script:InventoryScanJobs.Values | Where-Object { -not $_.Received }).Count -eq 0) {
         $script:InventoryCache = [PSCustomObject]@{
             Software = @($script:InventoryScanResults.Software)
             Chromium = @($script:InventoryScanResults.Chromium)
             Firefox = @($script:InventoryScanResults.Firefox)
+            Execution = @($script:InventoryScanResults.Execution)
+            ExecutionSources = @($script:InventoryScanResults.ExecutionSources)
             CreatedAt = Get-Date
         }
         Stop-InventoryScanJobs
@@ -2612,9 +2662,9 @@ function Update-InventoryScanState {
 function Get-InventoryScanStatus {
     $ready = Update-InventoryScanState
     $completed = @($script:InventoryScanJobs.Values | Where-Object { $_.Received }).Count
-    if ($ready) { $completed = 3 }
+    if ($ready) { $completed = 4 }
     $elapsed = if ($null -ne $script:InventoryScanStartedAt) { [Math]::Round(((Get-Date) - $script:InventoryScanStartedAt).TotalSeconds, 1) } else { 0 }
-    return [PSCustomObject]@{ Ready = $ready; Completed = $completed; Total = 3; Error = $script:InventoryScanError; ElapsedSeconds = $elapsed }
+    return [PSCustomObject]@{ Ready = $ready; Completed = $completed; Total = 4; Error = $script:InventoryScanError; ElapsedSeconds = $elapsed }
 }
 
 function Initialize-NativeIconApi {
@@ -2728,8 +2778,8 @@ function Prime-RuleIconCacheFromReport {
     $white = @($AllRules.'白名单')
     $pending = @($AllRules.'待定')
     $null = @(Get-ComplianceResult -Installed $Inventory.Software -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '软件')
-    $null = @(Get-ComplianceResult -Installed $Inventory.Chromium -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType 'Chromium插件')
-    $null = @(Get-ComplianceResult -Installed $Inventory.Firefox -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType 'Firefox插件')
+    $null = @(Get-ComplianceResult -Installed $Inventory.Chromium -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '浏览器扩展')
+    $null = @(Get-ComplianceResult -Installed $Inventory.Firefox -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '浏览器扩展')
 }
 
 function Get-RuleIconKey {
@@ -2782,6 +2832,7 @@ function Convert-RulesForWeb {
     foreach ($rule in @($Rules)) {
         $ordered = [ordered]@{}
         foreach ($property in $rule.PSObject.Properties) { $ordered[$property.Name] = $property.Value }
+        $ordered['类型'] = Get-CanonicalRuleItemType $rule.'类型'
         $ordered['图标数据'] = ''
         $ordered['图标键'] = Get-RuleIconKey -Rule $rule
         $output += [PSCustomObject]$ordered
@@ -2890,7 +2941,7 @@ function Get-RowHtml {
         $statusDisplay = "<div class='tooltip-wrapper'><div class='status-compact'>ID不一致</div><div class='copyable-tooltip status-tooltip'>状态：待定<br>$idDifferenceDetail</div></div>"
     }
 
-    $typeIcon = if ($Item.类型 -eq '软件') { '&#128187;' } elseif ($Item.类型 -eq 'Chromium插件') { '&#127760;' } else { '&#129418;' }
+    $typeIcon = if ($Item.类型 -eq '软件') { '&#128187;' } else { '&#127760;' }
     $iconKey = ConvertTo-HtmlEncodedText $Item.图标键
     $iconHtml = if (-not [string]::IsNullOrWhiteSpace([string]$Item.图标键)) {
         "<span class='item-icon-slot'><img class='item-icon lazy-checksentry-icon' data-icon-key='$iconKey' alt='' loading='lazy'><span class='type-fallback'>$typeIcon</span></span>"
@@ -2902,7 +2953,7 @@ function Get-RowHtml {
     } elseif ($Item.Locations) {
         $parts = @()
         foreach ($location in @($Item.Locations)) {
-            $browser = if ($location.Browser) { [string]$location.Browser } elseif ($Item.类型 -eq 'Firefox插件') { 'Firefox' } else { '' }
+            $browser = if ($location.Browser) { [string]$location.Browser } elseif (@($Item.Locations | Where-Object { $_.Browser -eq 'Firefox' }).Count -gt 0) { 'Firefox' } else { '' }
             $windowsUser = [string]$location.WindowsUser
             $locationProfile = [string]$location.ProfileName
             if ($windowsUser -and $browser -and $locationProfile) { $parts += ($windowsUser + ' / ' + $browser + ' / ' + $locationProfile) }
@@ -2913,6 +2964,10 @@ function Get-RowHtml {
         $locationText = '安装位置: ' + (($parts | Select-Object -Unique) -join ' · ')
     }
     $locationHtml = if ([string]::IsNullOrWhiteSpace($locationText)) { '' } else { "<div class='tooltip-wrapper'><div class='item-location'>$(ConvertTo-HtmlEncodedText $locationText)</div><div class='copyable-tooltip'>$(ConvertTo-HtmlEncodedText $locationText)</div></div>" }
+    if ($Item.类型 -eq '软件' -and -not [string]::IsNullOrWhiteSpace([string]$Item.HistoryEvidenceSummary)) {
+        $historyText = ConvertTo-HtmlEncodedText $Item.HistoryEvidenceSummary
+        $locationHtml += "<div class='item-history-linked' title='$historyText'>↳ $historyText</div>"
+    }
     $rowClass = switch ([string]$Item.状态) {
         '命中黑名单' { 'row-red row-banned' }
         '待定' { 'row-pending' }
@@ -2978,8 +3033,478 @@ function ConvertTo-SpecialInventory {
     }
 }
 
+function Test-CheckSentryPathInside {
+    param([string]$Path, [string]$Parent)
+    if (-not $Path -or -not $Parent) { return $false }
+    try {
+        $full = [IO.Path]::GetFullPath($Path).TrimEnd('\')
+        $root = [IO.Path]::GetFullPath($Parent).TrimEnd('\')
+        return $full.StartsWith(($root + '\'), [StringComparison]::OrdinalIgnoreCase) -or
+            [string]::Equals($full, $root, [StringComparison]::OrdinalIgnoreCase)
+    } catch { return $false }
+}
+
+# 仅关联可信的安装实例；不会因为计算机安装了同名软件就删除便携版证据。
+function Get-CheckSentrySoftwareIdentity {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) { return '' }
+    $name = ([string]$Value).Normalize([Text.NormalizationForm]::FormKC).ToLowerInvariant()
+    return [regex]::Replace($name, '[^\p{L}\p{Nd}]', '')
+}
+
+function Get-CheckSentryInstalledRecordKey {
+    param($Item)
+    # 同一记录在安装库存和合规结果中共享这四项；不使用名称作为全局唯一键。
+    $name = ([string]$Item.名称).ToLowerInvariant()
+    $version = ([string]$Item.版本).ToLowerInvariant()
+    $publisher = ([string]$Item.发布者).ToLowerInvariant()
+    $location = ([string]$Item.安装路径).Trim().TrimEnd('\').ToLowerInvariant()
+    return ($name + '¦' + $version + '¦' + $publisher + '¦' + $location)
+}
+
+function Test-CheckSentryInstalledProductName {
+    param([string]$InstalledName, [string[]]$CandidateNames)
+    $name = Get-CheckSentrySoftwareIdentity $InstalledName
+    if ($name.Length -lt 4) { return $false } # 防止 app 等过短名称误关联。
+    foreach ($candidate in @($CandidateNames)) {
+        $token = Get-CheckSentrySoftwareIdentity $candidate
+        if ($token.Length -lt 4) { continue }
+        if ([string]::Equals($name, $token, [StringComparison]::OrdinalIgnoreCase)) { return $true }
+        # 只容许安装显示名称在产品名称后附带纯数字版本，不按“包含”关联。
+        if ($name.StartsWith($token, [StringComparison]::OrdinalIgnoreCase)) {
+            $suffix = $name.Substring($token.Length)
+            if ($suffix -match '^v?\d{1,16}(?:x64|x86|bit)?$') { return $true }
+        }
+    }
+    return $false
+}
+
+function Find-CheckSentryInstalledExecutionAssociation {
+    param($Entry, [object[]]$Installed, [string[]]$CandidateNames, [string]$Publisher)
+    # Prefetch 候选路径、仅凭 EXE 名称、未验证路径、已删除的程序及脚本均不得合并。
+    if ([string]$Entry.Kind -ne 'EXE' -or -not [bool]$Entry.PathVerified -or -not [bool]$Entry.FileExists) { return $null }
+    $path = [string]$Entry.Path
+    if ($path -notmatch '^[A-Za-z]:\\' -or $path -match '^(?:\\\\|//)') { return $null }
+    try {
+        $fullPath = [IO.Path]::GetFullPath($path).TrimEnd('\')
+        $parent = [IO.Path]::GetDirectoryName($fullPath).TrimEnd('\')
+    } catch { return $null }
+    $validMatches = New-Object System.Collections.Generic.List[object]
+    foreach ($software in @($Installed)) {
+        if ($null -eq $software) { continue }
+        if (-not (Test-CheckSentryInstalledProductName -InstalledName ([string]$software.名称) -CandidateNames $CandidateNames)) { continue }
+        # 已有公司信息相互矛盾时，不自动隐藏任一执行痕迹。
+        $installedPublisher = Get-CheckSentrySoftwareIdentity ([string]$software.发布者)
+        $observedPublisher = Get-CheckSentrySoftwareIdentity $Publisher
+        if ($installedPublisher -and $observedPublisher -and $installedPublisher -ne $observedPublisher) { continue }
+        $installPath = ([string]$software.安装路径).Trim().Trim('"').TrimEnd('\')
+        $directInstallFile = $false
+        if ($installPath -match '^[A-Za-z]:\\') {
+            try {
+                $installFullPath = [IO.Path]::GetFullPath($installPath).TrimEnd('\')
+                # 必须恰好是安装目录内主 EXE；不能隐藏子目录中的独立 Portable 版本。
+                if ([string]::Equals($parent, $installFullPath, [StringComparison]::OrdinalIgnoreCase)) {
+                    $leaf = Get-CheckSentrySoftwareIdentity ([IO.Path]::GetFileName($installFullPath))
+                    $exeBase = Get-CheckSentrySoftwareIdentity ([IO.Path]::GetFileNameWithoutExtension($fullPath))
+                    # 禁止把 C:\、C:\Tools、Program Files 这类通用根目录当成唯一安装位置。
+                    $rootNameIsProduct = ($leaf.Length -ge 4 -and
+                        (Test-CheckSentryInstalledProductName -InstalledName ([string]$software.名称) -CandidateNames @($leaf,$exeBase)) -and
+                        ($leaf -eq $exeBase -or $leaf -eq (Get-CheckSentrySoftwareIdentity ([string]$software.名称))))
+                    if ($rootNameIsProduct) { $directInstallFile = $true }
+                }
+            } catch { }
+        }
+        # 安装注册表 DisplayIcon 提供独立文件路径时，可补充精确路径匹配。
+        # 其他“自动猜出的图标”不作为进程身份依据。
+        $directIconFile = $false
+        if ([string]$software.图标来源 -eq 'DisplayIcon' -and ([string]$software.图标路径) -match '(?i)\.exe$') {
+            try {
+                $iconFull = [IO.Path]::GetFullPath([string]$software.图标路径).TrimEnd('\')
+                $directIconFile = [string]::Equals($fullPath, $iconFull, [StringComparison]::OrdinalIgnoreCase)
+            } catch { }
+        }
+        if ($directInstallFile -or $directIconFile) { $validMatches.Add($software) }
+    }
+    $identities = @($validMatches | ForEach-Object { Get-CheckSentryInstalledRecordKey -Item $_ } | Select-Object -Unique)
+    if ($identities.Count -ne 1) { return $null } # 多个不同安装产品竞争同一证据，保留历史行。
+    return [PSCustomObject]@{ Key = [string]$identities[0]; Name = [string]$validMatches[0].名称; Path = $fullPath }
+}
+
+# 历史程序复用软件规则：分离执行证据与合规判断，文件名称匹配不会伪装成已核实的签名。
+function Get-HistorySoftwareRuleMatch {
+    param($Matcher, [string[]]$Names, [string]$Publisher, [string]$Version, [switch]$IgnoreVersion, [switch]$IgnorePublisher)
+    foreach ($candidate in @($Names | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)) {
+        $match = Find-FirstMatchingRule -Rules $Matcher -ItemType '软件' -DisplayName $candidate -Publisher $Publisher -ExtensionId '' -Version $Version -IgnoreVersion:$IgnoreVersion -IgnorePublisher:$IgnorePublisher
+        if ($null -ne $match) { return [PSCustomObject]@{ Rule = $match; MatchedName = $candidate } }
+    }
+    return $null
+}
+
+function Get-ExecutionAuditRows {
+    param($Inventory, $AllRules)
+    $script:ApprovedRevealPaths.Clear()
+    if ($null -eq $Inventory) { return @() }
+    $all = @($Inventory.Execution | Where-Object { $null -ne $_ -and ([string]$_.Kind -eq 'EXE' -or ([string]$_.Kind -eq '脚本' -and [string]$_.Name -match '(?i)\.(bat|cmd)$')) })
+    $index = @{}
+    foreach ($evidence in $all) {
+        $name = [string]$evidence.Name
+        $path = [string]$evidence.Path
+        if ($path -and $path -notmatch '^[A-Za-z]:\\') { $path = '' }
+        $kind = [string]$evidence.Kind
+        $key = if ($path) { ($kind + '|path|' + $path).ToLowerInvariant() }
+            else { ($kind + '|prefetch|' + $name + '|' + [string]$evidence.PfHash).ToLowerInvariant() }
+        if (-not $index.ContainsKey($key)) {
+            $index[$key] = [PSCustomObject]@{
+                Name = $name; Path = $path; Kind = $kind; Sources = @(); Times = @();
+                PfHash = [string]$evidence.PfHash; RunCount = 0; PathEvidence = [string]$evidence.PathEvidence
+                FileExists = $false; PathVerified = [bool]$evidence.PathVerified
+            }
+        }
+        $item = $index[$key]
+        $item.Sources = @($item.Sources) + @([string]$evidence.Source)
+        $item.Times = @($item.Times) + @($evidence.Times | Where-Object { $null -ne $_ })
+        if ([int]$evidence.RunCount -gt [int]$item.RunCount) { $item.RunCount = [int]$evidence.RunCount }
+        if ([bool]$evidence.PathVerified) { $item.PathVerified = $true; $item.PathEvidence = [string]$evidence.PathEvidence }
+        if ($path -and (Test-Path -LiteralPath $path -PathType Leaf)) { $item.FileExists = $true }
+    }
+    $blackMatcher = New-RuleMatcher -Rules @($AllRules.'黑名单') -ItemType '软件'
+    $whiteMatcher = New-RuleMatcher -Rules @($AllRules.'白名单') -ItemType '软件'
+    $pendingMatcher = New-RuleMatcher -Rules @($AllRules.'待定') -ItemType '软件'
+    $rows = New-Object System.Collections.Generic.List[object]
+    $windows = [string]$env:WINDIR
+    $programRoots = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ }
+    $userAppRoot = Join-Path $env:LOCALAPPDATA 'Programs'
+    $downloadRoot = Join-Path $env:USERPROFILE 'Downloads'
+    $desktopRoot = [Environment]::GetFolderPath('Desktop')
+    $documentsRoot = [Environment]::GetFolderPath('MyDocuments')
+    $publicRoot = [Environment]::GetEnvironmentVariable('PUBLIC')
+    $commonOsNames = @('svchost.exe','explorer.exe','conhost.exe','sihost.exe','taskhostw.exe',
+        'dllhost.exe','rundll32.exe','regsvr32.exe','wmiprvse.exe','runtimebroker.exe',
+        'searchhost.exe','searchindexer.exe','services.exe','lsass.exe','csrss.exe','wininit.exe',
+        'dwm.exe','smss.exe','ctfmon.exe','fontdrvhost.exe','spoolsv.exe','audiodg.exe',
+        'wermgr.exe','werfault.exe','powershell.exe','cmd.exe','pwsh.exe')
+    foreach ($entry in @($index.Values)) {
+        $path = [string]$entry.Path
+        $source = @($entry.Sources | Select-Object -Unique)
+        $times = @($entry.Times | ForEach-Object { [datetime]$_ } | Sort-Object -Unique -Descending)
+        $latest = if ($times.Count -gt 0) { [datetime]$times[0] } else { [datetime]::MinValue }
+        $isWindows = $path -and (Test-CheckSentryPathInside -Path $path -Parent $windows)
+        $isPrograms = $false
+        foreach ($root in $programRoots) { if (Test-CheckSentryPathInside -Path $path -Parent $root) { $isPrograms = $true; break } }
+        $interactionOnly = ($source.Count -eq 1 -and $source[0] -eq 'UserAssist')
+        $display = [IO.Path]::GetFileNameWithoutExtension([string]$entry.Name)
+        $candidateNames = @($display)
+        $filePublisher = ''
+        $fileVersion = ''
+        $fileMetadataRead = $false
+        if ([bool]$entry.PathVerified -and $path -and $entry.FileExists) {
+            try {
+                $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($path)
+                $filePublisher = [string]$info.CompanyName
+                $fileVersion = [string]$info.ProductVersion
+                foreach ($alternative in @([string]$info.ProductName, [string]$info.FileDescription,
+                    [IO.Path]::GetFileNameWithoutExtension([string]$info.OriginalFilename))) {
+                    if (-not [string]::IsNullOrWhiteSpace($alternative) -and $candidateNames -notcontains $alternative) { $candidateNames += $alternative }
+                }
+                $fileMetadataRead = $true
+            } catch { $fileMetadataRead = $false }
+        }
+        $association = Find-CheckSentryInstalledExecutionAssociation -Entry $entry -Installed @($Inventory.Software) -CandidateNames $candidateNames -Publisher $filePublisher
+        $isInstalled = $null -ne $association
+        # 发布者/产品名称是 EXE 自带元数据，不能替代有效数字签名或可信哈希。
+        $blackHit = Get-HistorySoftwareRuleMatch -Matcher $blackMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion -IgnoreVersion
+        $whiteHit = $null
+        $whiteVersionHit = $null
+        $pendingHit = $null
+        if ($null -eq $blackHit) {
+            $whiteHit = Get-HistorySoftwareRuleMatch -Matcher $whiteMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion
+            if ($null -eq $whiteHit) {
+                $whiteVersionHit = Get-HistorySoftwareRuleMatch -Matcher $whiteMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion -IgnoreVersion
+            }
+            if ($null -eq $whiteHit -and $null -eq $whiteVersionHit) {
+                $pendingHit = Get-HistorySoftwareRuleMatch -Matcher $pendingMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion
+            }
+        }
+        # 当历史证据仅剩文件名，且规则限制了发布者，仍提示潜在的同名风险，
+        # 但绝不把忽略发布者的弱匹配升级成已确认的黑名单/白名单结论。
+        $blackNameLead = $null
+        $whiteNameLead = $null
+        if ($null -eq $blackHit -and $null -eq $whiteHit -and $null -eq $whiteVersionHit -and $null -eq $pendingHit) {
+            $blackNameLead = Get-HistorySoftwareRuleMatch -Matcher $blackMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion -IgnoreVersion -IgnorePublisher
+            if ($null -eq $blackNameLead) {
+                $whiteNameLead = Get-HistorySoftwareRuleMatch -Matcher $whiteMatcher -Names $candidateNames -Publisher $filePublisher -Version $fileVersion -IgnoreVersion -IgnorePublisher
+            }
+        }
+        $policyStatus = '未命中规则'
+        $policyNote = ''
+        $policySheet = ''
+        $policyMatchedName = ''
+        $policyRuleId = ''
+        $policyPriority = 9
+        if ($null -ne $blackHit) {
+            $policyStatus = if ($interactionOnly) { '禁用规则名称关联（仅 GUI 交互线索）' } else { '命中黑名单（需核对文件身份）' }
+            $policyPriority = if ($interactionOnly) { 2 } else { 0 }
+            $policySheet = '黑名单'; $policyMatchedName = [string]$blackHit.MatchedName
+            $policyRuleId = [string]$blackHit.Rule.id
+            $policyNote = [string]$blackHit.Rule.'备注/原因'
+        } elseif ($null -ne $whiteHit) {
+            $policyStatus = if ($interactionOnly) { '白名单关联（仅 GUI 交互线索）' } else { '匹配白名单（按名称/文件元数据）' }
+            $policyPriority = 5; $policySheet = '白名单'; $policyMatchedName = [string]$whiteHit.MatchedName
+            $policyRuleId = [string]$whiteHit.Rule.id
+            $policyNote = [string]$whiteHit.Rule.'备注/原因'
+        } elseif ($null -ne $whiteVersionHit) {
+            $policyStatus = '白名单名称匹配 · 版本需核实'
+            $policyPriority = 2; $policySheet = '白名单'; $policyMatchedName = [string]$whiteVersionHit.MatchedName
+            $policyRuleId = [string]$whiteVersionHit.Rule.id
+        } elseif ($null -ne $pendingHit) {
+            $policyStatus = '命中待定规则'
+            $policyPriority = 2; $policySheet = '待定'; $policyMatchedName = [string]$pendingHit.MatchedName
+            $policyRuleId = [string]$pendingHit.Rule.id
+        } elseif ($null -ne $blackNameLead) {
+            $policyStatus = '与黑名单名称相似 · 发布者待核实'
+            $policyPriority = 2; $policySheet = '黑名单线索'
+            $policyMatchedName = [string]$blackNameLead.MatchedName
+            $policyNote = '仅按名称比对，忽略了规则发布者限制；不得视为确定违规。'
+        } elseif ($null -ne $whiteNameLead) {
+            $policyStatus = '与白名单名称相似 · 发布者待核实'
+            $policyPriority = 2; $policySheet = '白名单线索'
+            $policyMatchedName = [string]$whiteNameLead.MatchedName
+            $policyNote = '尚未验证规则发布者，不得自动作为已批准软件。'
+        }
+        $status = '待核实'
+        $priority = 2
+        if ($interactionOnly) { $status = 'GUI 交互线索（尚不能确定执行）'; $priority = 4 }
+        elseif ($isWindows) { $status = 'Windows 系统路径'; $priority = 5 }
+        elseif ($isInstalled) { $status = '路径关联已安装软件'; $priority = 4 }
+        elseif ($path -and $isPrograms) { $status = '程序目录组件'; $priority = 3 }
+        elseif ($path -and (Test-CheckSentryPathInside -Path $path -Parent $userAppRoot)) { $status = '用户应用目录（安装情况待核实）'; $priority = 3 }
+        elseif ($path -and $entry.FileExists -and $entry.PathVerified) { $status = '疑似免安装（有执行证据）'; $priority = 1 }
+        elseif ($path -and $entry.FileExists -and $source -contains 'Prefetch') { $status = '疑似免安装（执行已记录，位置待验证）'; $priority = 1 }
+        elseif ($path -and $entry.FileExists) { $status = '候选路径未验证'; $priority = 3 }
+        elseif ($path -and $entry.PathVerified) { $status = '历史路径（文件已不存在）'; $priority = 2 }
+        elseif ($path -and $source -contains 'Prefetch') { $status = '疑似免安装（历史执行，候选路径未验证）'; $priority = 2 }
+        elseif ($path) { $status = '候选路径未验证'; $priority = 3 }
+        elseif ([string]$entry.Name -in $commonOsNames) { $status = '系统名称（路径未确认）'; $priority = 5 }
+        elseif ($source -contains 'Prefetch') { $status = '历史执行已记录，位置待确认'; $priority = 2 }
+        else { $status = '执行已记录，位置未知'; $priority = 3 }
+        # 只影响同一合规组内的展示先后，不改变黑白名单判断，也不扩大扫描范围。
+        # 路径未经证实时只是线索，不能据此认定程序真实位置或违规。
+        $locationRank = 7
+        $locationLabel = '位置未知'
+        if ($path) {
+            if ($isWindows) { $locationRank = 9; $locationLabel = '系统目录' }
+            elseif (Test-CheckSentryPathInside -Path $path -Parent $downloadRoot) { $locationRank = 0; $locationLabel = '下载目录' }
+            elseif ((Test-CheckSentryPathInside -Path $path -Parent $desktopRoot) -or
+                    (Test-CheckSentryPathInside -Path $path -Parent $documentsRoot)) { $locationRank = 1; $locationLabel = '桌面 / 文档目录' }
+            elseif ((Test-CheckSentryPathInside -Path $path -Parent $env:TEMP) -or
+                    (Test-CheckSentryPathInside -Path $path -Parent $env:APPDATA) -or
+                    (Test-CheckSentryPathInside -Path $path -Parent $env:LOCALAPPDATA) -or
+                    (Test-CheckSentryPathInside -Path $path -Parent $publicRoot)) { $locationRank = 2; $locationLabel = '用户可写目录' }
+            elseif (Test-CheckSentryPathInside -Path $path -Parent $env:USERPROFILE) { $locationRank = 2; $locationLabel = '用户目录' }
+            elseif ($isPrograms) { $locationRank = 8; $locationLabel = '常规软件目录' }
+            elseif ($path -match '^[D-Zd-z]:\\') { $locationRank = 3; $locationLabel = '其他磁盘' }
+            else { $locationRank = 4; $locationLabel = '非系统位置' }
+            if (-not [bool]$entry.PathVerified) {
+                $locationLabel += ' · 待验证'
+                $locationRank += 1
+            }
+        }
+        $executionStatus = $status
+        if ($policySheet) {
+            $status = $policyStatus
+            $priority = $policyPriority
+        }
+        $revealKey = ''
+        if ([bool]$entry.PathVerified -and $path -and $entry.FileExists -and $path -match '^[A-Za-z]:\\' -and $path -notmatch '"') {
+            $revealKey = New-RandomToken -ByteCount 12
+            $script:ApprovedRevealPaths[$revealKey] = $path
+        }
+        $rows.Add([PSCustomObject]@{
+            Name = [string]$entry.Name; Kind = [string]$entry.Kind
+            Path = $path; FileExists = [bool]$entry.FileExists
+            Status = $status; ExecutionStatus = $executionStatus; Priority = $priority; Sources = ($source -join ' + ')
+            PolicyStatus = $policyStatus; PolicySheet = $policySheet; PolicyReason = $policyNote
+            PolicyRuleId = $policyRuleId; PolicyMatchedName = $policyMatchedName
+            FilePublisher = $filePublisher; FileVersion = $fileVersion; FileMetadataRead = $fileMetadataRead
+            LocationRank = $locationRank; LocationLabel = $locationLabel
+            PathEvidence = [string]$entry.PathEvidence; PathVerified = [bool]$entry.PathVerified
+            LastSeen = $latest; RunTimes = $times; RunCount = [int]$entry.RunCount
+            RevealKey = $revealKey; PfHash = [string]$entry.PfHash
+            InstalledMatchKey = if ($null -ne $association) { [string]$association.Key } else { '' }
+            InstalledMatchName = if ($null -ne $association) { [string]$association.Name } else { '' }
+        })
+    }
+    return @($rows.ToArray() | Sort-Object Priority, LocationRank, @{Expression='LastSeen';Descending=$true}, Name)
+}
+
+function Add-CheckSentryHistorySummaryToInstalledResults {
+    param([object[]]$Results, [object[]]$HistoryRows)
+    $byKey = @{}
+    foreach ($row in @($HistoryRows)) {
+        $key = [string]$row.InstalledMatchKey
+        if (-not $key) { continue }
+        if (-not $byKey.ContainsKey($key)) { $byKey[$key] = @() }
+        $byKey[$key] += $row
+    }
+    foreach ($result in @($Results | Where-Object { $_.类型 -eq '软件' })) {
+        $key = Get-CheckSentryInstalledRecordKey -Item $result
+        if (-not $byKey.ContainsKey($key)) { continue }
+        $linked = @($byKey[$key])
+        $last = @($linked | Where-Object { $_.LastSeen -ne [datetime]::MinValue } | Sort-Object LastSeen -Descending | Select-Object -First 1)
+        $lastText = if ($last.Count) { ([datetime]$last[0].LastSeen).ToString('yyyy-MM-dd HH:mm') } else { '' }
+        $sources = @($linked | ForEach-Object { [string]$_.Sources } | Select-Object -Unique) -join '；'
+        $note = if ($lastText) { '历史线索：' + $lastText } else { '已关联历史记录（无明确时间）' }
+        $note += '；同位置安装项关联（非文件哈希证明）；来源：' + $sources
+        $result | Add-Member -MemberType NoteProperty -Name HistoryEvidenceSummary -Value $note -Force
+    }
+}
+
+function Get-ExecutionAuditHtml {
+    param($Inventory, $AllRules, [object[]]$HistoryRows = @(), [object[]]$InstalledResults = @())
+    if ($null -eq $Inventory) { return '' }
+    # 保持旧调用方式兼容；正式报告传入共享的历史结果，避免重复分析。
+    if ($HistoryRows.Count -eq 0 -and @($Inventory.Execution).Count -gt 0) {
+        $HistoryRows = @(Get-ExecutionAuditRows -Inventory $Inventory -AllRules $AllRules)
+    }
+    $installedKeys = @{}
+    foreach ($record in @($InstalledResults | Where-Object { $_.类型 -eq '软件' })) {
+        $installedKeys[(Get-CheckSentryInstalledRecordKey -Item $record)] = $true
+    }
+    $linked = @($HistoryRows | Where-Object { $_.InstalledMatchKey -and $installedKeys.ContainsKey([string]$_.InstalledMatchKey) })
+    $rows = @($HistoryRows | Where-Object { -not ($_.InstalledMatchKey -and $installedKeys.ContainsKey([string]$_.InstalledMatchKey)) })
+    $sourceRows = @($Inventory.ExecutionSources)
+    # 详细技术消息保留给高级审计员，主要界面只给普通用户可执行的操作。
+    $sourceText = if ($sourceRows.Count -eq 0) { '没有收到历史记录扫描结果。' }
+        else { (@($sourceRows | ForEach-Object { [string]$_.Source + '：' + [string]$_.Status + '（' + [string]$_.Message + '）' }) -join '；') }
+    $summary = ConvertTo-HtmlEncodedText $sourceText
+    $needsElevation = @($sourceRows | Where-Object { $_.Source -in @('Prefetch', 'BAM') -and $_.Status -eq '权限不足' }).Count -gt 0
+    $noEventHistory = @($sourceRows | Where-Object { $_.Source -eq '4688' -and $_.Status -eq '未启用或不可访问' }).Count -gt 0
+    $quickGuide = ''
+    if ($needsElevation) {
+        $quickGuide += '<p><strong>① 建议操作：</strong>关闭 CheckSentry，右键 CheckSentry.exe →「以管理员身份运行」。再次打开后会自动重新扫描，不需要额外点击历史扫描按钮。</p>'
+        $quickGuide += '<p><strong>② 注意账户：</strong>如果 Windows 要求输入另一个管理员账户的密码，当前用户的浏览器扩展和交互记录可能与被审计员工不同。请让 IT 按公司授权流程操作，并核对被审计账户；不要把结果误认为覆盖了全部用户。</p>'
+    }
+    if ($noEventHistory) {
+        $quickGuide += '<p><strong>③ 过去的脚本记录：</strong>Windows 没有提供可读取的进程启动日志。今天开启审计也不能补出昨天的 BAT/CMD 记录；如公司以后需要此能力，由 IT 统一配置，不要现场随意修改员工电脑的安全策略。</p>'
+    }
+    if (-not $quickGuide -and $sourceRows.Count -eq 0) { $quickGuide = '<p>本次没有返回扫描结果，请先重新打开工具；仍无结果时交给 IT 检查日志。</p>' }
+    $prefetchSource = @($sourceRows | Where-Object { $_.Source -eq 'Prefetch' } | Select-Object -First 1)
+    $coverageNote = ''
+    if ($prefetchSource.Count -gt 0) {
+        $pf = $prefetchSource[0]
+        if ($pf.Status -in @('权限不足','不可用','解析器失败','无记录','未扫描')) {
+            $coverageNote = "Prefetch：$($pf.Status)。这次结果主要来自其他来源，不能视为完整的历史执行清单。请展开下方扫描来源查看具体原因。"
+        } elseif ([int]$pf.Found -gt 0 -and [int]$pf.Parsed -eq 0) {
+            $coverageNote = "Prefetch 找到 $($pf.Found) 个文件，但成功解析 0 个。需检查文件格式或解析组件；不能把其他来源的少量结果当作历史总量。"
+        } elseif ($pf.Status -eq '部分完成') {
+            $coverageNote = "Prefetch 只解析部分记录（成功 $($pf.Parsed) / $($pf.Found)），历史结果可能缺项。"
+        }
+    }
+    # 顺序固定：黑名单 → 未确认/待核实 → 白名单 → 其他。
+    $tableRows = @{ black = @(); review = @(); white = @(); other = @() }
+    foreach ($row in $rows) {
+        $group = 'other'
+        if ([string]$row.PolicySheet -eq '黑名单') { $group = 'black' }
+        elseif ([string]$row.PolicySheet -eq '白名单' -and [string]$row.PolicyStatus -notmatch '版本需核实') { $group = 'white' }
+        elseif ([int]$row.Priority -le 2) { $group = 'review' }
+        $row | Add-Member -MemberType NoteProperty -Name DisplayGroup -Value $group -Force
+    }
+    $blocked = @($rows | Where-Object { $_.DisplayGroup -eq 'black' }).Count
+    $unknown = @($rows | Where-Object { $_.DisplayGroup -eq 'review' }).Count
+    $allowed = @($rows | Where-Object { $_.DisplayGroup -eq 'white' }).Count
+    $other = @($rows | Where-Object { $_.DisplayGroup -eq 'other' }).Count
+    $portable = @($rows | Where-Object { $_.ExecutionStatus -like '疑似免安装*' }).Count
+    $markup = "<section class='exec-audit' id='executionAudit'><div class='exec-heading'><h2>历史运行 / 疑似免安装软件</h2><span class='exec-counter'>黑名单 $blocked · 待核实 $unknown · 白名单 $allowed · 其他 $other · 全部 $($rows.Count)</span></div>"
+    $markup += "<p class='exec-tip'>先看黑名单，再看待核实；同组内优先显示下载、桌面、文档及其他磁盘中的程序。白名单和系统组件默认折叠。目录位置本身不代表违规；UserAssist 只是交互线索，不等于确定执行。</p>"
+    if ($coverageNote) {
+        $markup += '<div class="exec-coverage-alert" role="status"><strong>历史记录可能不完整。</strong>部分 Windows 记录没有读取成功；当前列表不等于员工使用过的全部程序。'
+        if ($needsElevation) { $markup += ' <strong>可以尝试使用管理员权限重新打开。</strong>' }
+        $markup += '</div>'
+    }
+    $markup += '<details class="exec-source-details"><summary>如何补全扫描？（点击查看操作步骤）</summary>'
+    if ($quickGuide) { $markup += "<div class='exec-source-help'>$quickGuide</div>" }
+    $markup += '<details class="exec-tech-details"><summary>查看各来源技术状态</summary>'
+    $markup += "<p class='exec-source'>$summary</p></details></details>"
+    if ($linked.Count -gt 0) {
+        $markup += "<div class='exec-merged-summary'>已将 $($linked.Count) 条路径与安装项唯一对应的线索合并到原安装软件列表；仅代表执行位置关联，不证明历史二进制字节相同。独立便携版及身份不明记录仍保留。</div>"
+    }
+    $markup += '<div class="exec-batch-actions"><strong>历史记录已勾选 <span id="execBatchCount">0</span> 项</strong><button type="button" class="btn-approve" data-history-batch-status="允许">加入白名单</button><button type="button" class="btn-ban" data-history-batch-status="禁止">加入黑名单</button><button type="button" class="btn-pending" data-history-batch-status="待定">标记待定</button><button type="button" id="execCopySelected">复制已选</button><span>写入本机规则；云端规则需管理员另行维护。复制格式与原软件/插件区相同（Excel A:K，11 列）。</span></div>'
+    $markup += "<div class='exec-controls'><label>查看 <select id='execFilter'><option value='focus'>重点优先（默认）</option><option value='all'>全部展开</option><option value='portable'>疑似免安装</option><option value='missing'>位置未知/路径待确认</option></select></label><label>搜索 <input id='execSearch' type='search' placeholder='软件名称或路径' maxlength='150' autocomplete='off'></label><span id='execVisibleCount'></span></div>"
+    if ($rows.Count -eq 0) {
+        if ($linked.Count -gt 0) {
+            $markup += '<p class="exec-empty">本轮可关联的历史线索已在安装软件区展示；没有其他独立的历史程序记录。此结论不代表扫描覆盖完整。</p></section>'
+        } else {
+            $markup += '<p class="exec-empty">未获取执行证据。请查看扫描来源状态；这不能证明设备没有运行免安装软件。</p></section>'
+        }
+        return $markup
+    }
+    foreach ($item in @($rows | Sort-Object LocationRank, @{Expression='LastSeen';Descending=$true}, Name)) {
+        $groupName = [string]$item.DisplayGroup
+        $name = ConvertTo-HtmlEncodedText $item.Name
+        $kind = ConvertTo-HtmlEncodedText $item.Kind
+        $status = ConvertTo-HtmlEncodedText $item.Status
+        $locationLabel = ConvertTo-HtmlEncodedText $item.LocationLabel
+        # 行为证据与文件身份要分开，未经验证的名称不能直接当安全规则的可信身份。
+        $ruleName = [IO.Path]::GetFileNameWithoutExtension([string]$item.Name)
+        if ([string]::IsNullOrWhiteSpace($ruleName)) { $ruleName = [string]$item.Name }
+        $ruleName = ConvertTo-HtmlEncodedText $ruleName
+        $ruleVersion = if ($item.PathVerified -and $item.FileMetadataRead) { ConvertTo-HtmlEncodedText $item.FileVersion } else { '' }
+        $rulePublisher = if ($item.PathVerified -and $item.FileMetadataRead) { ConvertTo-HtmlEncodedText $item.FilePublisher } else { '' }
+        $historyEvidenceWeak = if ($item.PathVerified -and $item.FileMetadataRead) { 'false' } else { 'true' }
+        $executionStatus = ConvertTo-HtmlEncodedText $item.ExecutionStatus
+        $matchedRuleInfo = if ($item.PolicySheet) {
+            '<small class="exec-muted">' + (ConvertTo-HtmlEncodedText ('来源：' + $item.PolicySheet + ' · ' + $item.PolicyMatchedName + ' · ' + $item.PolicyReason)) + '</small>'
+        } else { '' }
+        $path = ConvertTo-HtmlEncodedText $item.Path
+        $evidence = ConvertTo-HtmlEncodedText ($item.Sources + ' · ' + $item.PathEvidence)
+        $pathText = if ($item.Path) { $path } else { '<span class="exec-muted">位置未确认，不提供猜测路径</span>' }
+        $lastSeen = if ($item.LastSeen -eq [datetime]::MinValue -and $item.Sources -match '当前运行') { '当前正在运行' } elseif ($item.LastSeen -eq [datetime]::MinValue) { '时间未恢复' } else { ([datetime]$item.LastSeen).ToString('yyyy-MM-dd HH:mm:ss') }
+        $times = ConvertTo-HtmlEncodedText ((@($item.RunTimes | Select-Object -First 8 | ForEach-Object { ([datetime]$_).ToString('yyyy-MM-dd HH:mm:ss') }) -join '、'))
+        $countText = if ($item.Sources -match 'Prefetch' -and $item.RunCount -gt 0) { "Prefetch 累计 $($item.RunCount) 次" }
+            elseif ($item.Sources -match 'BAM') { 'BAM 最近执行' }
+            elseif ($item.Sources -match '4688') { '进程创建事件' }
+            elseif ($item.Sources -match 'UserAssist') { 'GUI 交互线索' }
+            elseif ($item.Sources -match '当前运行') { '当前进程' }
+            else { '执行线索' }
+        $copyLabel = if ($item.PathVerified) { '复制路径' } else { '复制候选路径' }
+        $copyPath = if ($item.Path) { "<button type='button' class='exec-copy' data-path='$path'>$copyLabel</button>" } else { '' }
+        $locate = if ($item.RevealKey) { "<button type='button' class='exec-reveal' data-key='$(ConvertTo-HtmlEncodedText $item.RevealKey)'>打开所在位置</button>" }
+            elseif ($item.Path -and $item.PathVerified) { '<span class="exec-muted">文件已不存在</span>' }
+            elseif ($item.Path) { '<span class="exec-muted">路径待验证</span>' }
+            else { '<span class="exec-muted">无法定位</span>' }
+        $pathFlag = if ($item.PathVerified) { '来源记录的路径（文件可能已变化）' } elseif ($item.Path) { '推断位置，未哈希验证' } else { '无已验证路径' }
+        $priority = [int]$item.Priority
+        $search = ConvertTo-HtmlEncodedText ($item.Name + ' ' + $item.Path + ' ' + $item.Status + ' ' + $item.PolicyMatchedName)
+        # 同一表单字段与原软件/浏览器扩展共用批量写入及复制逻辑。
+        # 不自动携带历史匹配的云端规则 ID，避免将仅名称相似的线索误当为可覆盖的原规则。
+        $ruleFields = "<form class='exec-rule-fields' data-history-rule='1'><input name='itemType' value='软件'><input name='extId' value=''><input name='matchType' value='精确'><input name='namePattern' value='$ruleName'><input name='version' value='$ruleVersion'><input name='publisher' value='$rulePublisher'><input name='note' value=''><input name='noteLink' value=''><input name='matchedSheet' value=''><input name='matchedRuleId' value=''></form>"
+        $tableRows[$groupName] += "<tr class='exec-entry' data-history-weak='$historyEvidenceWeak' data-priority='$priority' data-status='$status' data-execution-status='$executionStatus' data-search='$search'><td class='exec-check-cell'><input class='row-chk exec-row-chk' type='checkbox' aria-label='选择 $name'></td><td><strong>$name</strong><small>$kind · $countText</small><small class='exec-origin-tag'>$locationLabel</small>$ruleFields</td><td><span title='$times'>$lastSeen</span></td><td><strong>$status</strong><small class='exec-muted'>$executionStatus</small>$matchedRuleInfo</td><td><div class='exec-path' title='$path'>$pathText</div><small>$(ConvertTo-HtmlEncodedText $pathFlag)</small></td><td><small class='exec-evidence' title='$evidence'>$evidence</small><div class='exec-action-row'>$locate$copyPath</div></td></tr>"
+    }
+    $sections = @(
+        [PSCustomObject]@{ Id='black'; Label='① 黑名单规则命中 / 关联'; Count=$blocked; Detail='最优先审查；只具 GUI 线索的记录不等于确认运行'; Open=$true; Class='exec-group-black' },
+        [PSCustomObject]@{ Id='review'; Label='② 未确认 / 待核实'; Count=$unknown; Detail='疑似免安装、规则同名线索、未知路径或版本待核实'; Open=$true; Class='exec-group-review' },
+        [PSCustomObject]@{ Id='white'; Label='③ 白名单关联'; Count=$allowed; Detail='公司规则已匹配；仅有 GUI 线索时仍按证据注明'; Open=$false; Class='exec-group-white' },
+        [PSCustomObject]@{ Id='other'; Label='④ 其他执行和交互线索'; Count=$other; Detail='系统组件和低优先级记录；保留查询，不冒充安全结论'; Open=$false; Class='exec-group-other' }
+    )
+    foreach ($section in $sections) {
+        $open = if ($section.Open) { ' open' } else { '' }
+        $markup += "<details class='exec-group $($section.Class)' data-group='$($section.Id)'$open><summary><span>$($section.Label)（$($section.Count)）</span><small>$(ConvertTo-HtmlEncodedText $section.Detail)</small><label class='exec-select-group' title='选择当前分组中可见的记录'><input type='checkbox' class='exec-group-select' aria-label='全选本组'> 本组全选</label></summary>"
+        if ($section.Count -eq 0) { $markup += '<p class="exec-group-empty">本组无记录。</p>' }
+        else {
+            $markup += "<div class='exec-table-scroll'><table class='exec-table'><colgroup><col style='width:4%'><col style='width:18%'><col style='width:13%'><col style='width:18%'><col style='width:28%'><col style='width:19%'></colgroup><thead><tr><th>选择</th><th>程序 / 类型</th><th>最近执行</th><th>规则判定 / 执行状态</th><th>程序位置</th><th>证据与定位</th></tr></thead><tbody>"
+            $markup += ($tableRows[[string]$section.Id] -join "`n")
+            $markup += '</tbody></table></div>'
+        }
+        $markup += '</details>'
+    }
+    $markup += '</section>'
+    return $markup
+}
+
 function Build-ReportHtml {
-    param($Results, [string]$Path, [string]$CsrfToken, [string]$Nonce)
+    param($Results, [string]$Path, [string]$CsrfToken, [string]$Nonce, $Inventory = $null, $AllRules = $null)
+    $historyRows = if ($null -ne $Inventory -and $null -ne $AllRules) { @(Get-ExecutionAuditRows -Inventory $Inventory -AllRules $AllRules) } else { @() }
+    Add-CheckSentryHistorySummaryToInstalledResults -Results @($Results) -HistoryRows $historyRows
     $red = @($Results | Where-Object { $_.状态 -eq '命中黑名单' })
     $yellow = @($Results | Where-Object { $_.状态 -eq '版本变化' })
     $pendingAll = @($Results | Where-Object { $_.状态 -eq '待定' })
@@ -3003,6 +3528,7 @@ function Build-ReportHtml {
         else { $body += "<p class='empty'>$(ConvertTo-HtmlEncodedText $section.Empty)</p>" }
         $body += '</div>'
     }
+    $body += (Get-ExecutionAuditHtml -Inventory $Inventory -AllRules $AllRules -HistoryRows $historyRows -InstalledResults @($Results))
     $greenRows = ($green | ForEach-Object { Get-RowHtml -Item $_ -NeedsAction $true }) -join "`n"
     $body += "<div class='section-container'><details class='green-section'><summary><h2 class='sec-green'>&#128994; 已匹配（点击展开，共 $($green.Count) 项）</h2><label class='section-select green-select'><input type='checkbox' class='section-chk'> 全选本区</label></summary>$tableHead$greenRows$tableTail</details></div>"
     $cloudState = $script:CloudSyncState
@@ -3028,6 +3554,7 @@ function Build-ReportHtml {
         $cloudStatusHtml = "<span class='tag'>云端：未配置</span>"
     }
     $summary = "<div class='summary'><span>核对时间：$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</span><span class='tag tag-red'>黑名单：$($red.Count)</span><span class='tag tag-yellow'>版本变化：$($yellow.Count)</span><span class='tag tag-pending'>待定：$($pending.Count)</span><span class='tag tag-green'>已匹配：$($green.Count)</span>$cloudStatusHtml<span class='tag'>清单文件：$(ConvertTo-HtmlEncodedText $Path)</span><a href='/special' class='special-entry' style='display:inline-block;padding:8px 16px;background:#1d4ed8;color:white;border-radius:6px;text-decoration:none;font-weight:600'>专项排查</a><button type='button' id='openManagementButton'>清单维护</button><button type='button' id='cloudSettingsButton'>云端清单设置</button><button type='button' id='cloudSyncButton'>立即同步</button><button type='button' id='reloadButton'>重新扫描分类</button></div>"
+    if ($null -eq $AllRules -and $null -ne $Inventory) { $AllRules = Import-AllRuleSheets -Path $Path }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'report_template.html') -Raw -Encoding UTF8
     return $template.Replace('__SUMMARY__', $summary).Replace('__BODY__', ($cloudWarningHtml + $body)).Replace('__CSRF_TOKEN__', (ConvertTo-HtmlEncodedText $CsrfToken)).Replace('__CSP_NONCE__', (ConvertTo-HtmlEncodedText $Nonce))
 }
@@ -3258,7 +3785,7 @@ function Start-ReportServer {
     if ($null -eq $listener -or -not $listener.IsListening) { throw '无法绑定端口。请关闭占用程序或使用 -Port 指定其他端口。' }
     $cookieName = "CheckSentrySession_$actualPort"
     $url = "http://localhost:$actualPort/#session=$bootstrapToken"
-    Write-Host "报告服务已启动：$url" -ForegroundColor Green
+    Write-Host "报告服务已启动：http://localhost:$actualPort/（完整会话链接不会写入常规控制台输出）" -ForegroundColor Green
     if ($actualPort -ne $RequestedPort) { Write-Host "端口 $RequestedPort 已占用，已自动改用 $actualPort。" -ForegroundColor Yellow }
     Write-Host '关闭此窗口即可停止工具。' -ForegroundColor DarkGray
     Start-InventoryScanJobs -IncludeSystem:$IncludeSystem -IncludeInactive:$IncludeInactiveExtensions -AllUsers:$ScanAllUsers
@@ -3355,17 +3882,25 @@ function Start-ReportServer {
                     $pending = @($allRules.'待定')
                     $results = @()
                     $results += Get-ComplianceResult -Installed $inventory.Software -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '软件'
-                    $results += Get-ComplianceResult -Installed $inventory.Chromium -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType 'Chromium插件'
-                    $results += Get-ComplianceResult -Installed $inventory.Firefox -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType 'Firefox插件'
+                    $results += Get-ComplianceResult -Installed $inventory.Chromium -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '浏览器扩展'
+                    $results += Get-ComplianceResult -Installed $inventory.Firefox -BlackRules $black -WhiteRules $white -PendingRules $pending -ItemType '浏览器扩展'
                     $newCount = Add-NewPendingRules -Path $Path -Results $results
                     if ($newCount -gt 0) { Write-Host "本次扫描自动加入待定：$newCount 条" -ForegroundColor Yellow }
-                    Write-HtmlResponse -Response $response -Html (Build-ReportHtml -Results $results -Path $Path -CsrfToken $csrfToken -Nonce $nonce) -StatusCode 200 -Nonce $nonce
+                    Write-HtmlResponse -Response $response -Html (Build-ReportHtml -Results $results -Path $Path -CsrfToken $csrfToken -Nonce $nonce -Inventory $inventory -AllRules $allRules) -StatusCode 200 -Nonce $nonce
                 } elseif ($request.HttpMethod -eq 'GET' -and $route -eq '/favicon.ico') {
                     Write-ResponseBytes -Response $response -Bytes ([byte[]]@()) -ContentType 'image/x-icon' -StatusCode 204 -Nonce $nonce
                 } elseif ($request.HttpMethod -eq 'POST') {
                     Assert-AuthorizedPostRequest -Request $request -CsrfToken $csrfToken
                                         $data = Read-JsonRequestBody -Request $request
-                    if ($route -eq '/api/scan') {
+                    if ($route -eq '/api/execution/reveal') {
+                        $key = Get-LimitedText -Value $data.key -FieldName '定位标识' -MaximumLength 64 -Required
+                        if (-not $script:ApprovedRevealPaths.ContainsKey($key)) { throw '该定位请求已失效，请重新加载报告。' }
+                        $target = [string]$script:ApprovedRevealPaths[$key]
+                        if ($target -notmatch '^[A-Za-z]:\\' -or -not (Test-Path -LiteralPath $target -PathType Leaf)) { throw '程序文件已移动或删除。' }
+                        if ($target -match '"') { throw '不支持该路径。' }
+                        Start-Process -FilePath (Join-Path $env:WINDIR 'explorer.exe') -ArgumentList ('/select,"' + $target + '"') -ErrorAction Stop
+                        Write-JsonResponse -Response $response -Object @{ ok = $true } -StatusCode 200 -Nonce $nonce
+                    } elseif ($route -eq '/api/scan') {
                         $cloudSyncResult = Sync-CloudWorkbook -Path $Path
                         Start-InventoryScanJobs -IncludeSystem:$IncludeSystem -IncludeInactive:$IncludeInactiveExtensions -AllUsers:$ScanAllUsers
                         Write-JsonResponse -Response $response -Object @{ ok = $true } -StatusCode 200 -Nonce $nonce

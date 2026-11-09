@@ -3,7 +3,7 @@ name: Build, test and release CheckSentry
 on:
   workflow_dispatch:
   push:
-    tags: ['v*.*.*']
+    tags: ['v1.2.0']
 
 permissions:
   contents: read
@@ -22,8 +22,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '8.0.x'
-      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+          dotnet-version: '10.0.x'
+      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: csharp
           build-mode: manual
@@ -31,7 +31,7 @@ jobs:
       - name: Build launcher for CodeQL
         shell: pwsh
         run: dotnet build .\launcher\CheckSentry.Launcher.csproj --configuration Release
-      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+      - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: '/language:csharp'
 
@@ -46,13 +46,28 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Run PowerShell tests
         shell: pwsh
         run: .\tests\Run-Tests.ps1
       - name: Run Windows PowerShell compatibility tests
         shell: powershell
         run: .\tests\Run-Tests.ps1
+      - name: Validate Prefetch parser (Windows PowerShell 5.1)
+        shell: powershell
+        run: .\tests\Execution-Tests.ps1
+      - name: Validate report JavaScript
+        shell: pwsh
+        run: |
+          node .\tests\check-html.js
+          node .\tests\check-special.js
+          node .\tests\check-history.js
+          node .\tests\check-security-baseline.js
+          node .\tests\check-extension-icon-safety.js
+          node .\tests\check-dedup.js
+          node .\tests\check-history-usability.js
+          node .\tests\check-unified-rules.js
+          node .\tests\check-xlsx-path-safety.js
       - name: Verify automatic browser session
         shell: pwsh
         run: node .\tests\check-session.js pwsh
@@ -60,17 +75,12 @@ jobs:
         shell: pwsh
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-          RELEASE_REF_TYPE: ${{ github.ref_type }}
           SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
           SIGNING_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
         run: |
-          if ($env:RELEASE_REF_TYPE -eq 'tag') {
-            $version = $env:RELEASE_TAG.TrimStart('v')
-          } else {
-            $project = [xml](Get-Content -LiteralPath '.\launcher\CheckSentry.Launcher.csproj' -Raw)
-            $version = [string]$project.Project.PropertyGroup.Version
-          }
-          if ($version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') { throw 'Invalid build version.' }
+          # Do not allow a workflow dispatch or release tag to change the locked app version.
+          $version = '1.2.0'
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:RELEASE_TAG -cne 'v1.2.0') { throw 'Only v1.2.0 can be published.' }
           $certificatePath = ''
           if (-not [string]::IsNullOrWhiteSpace($env:SIGNING_CERT_BASE64)) {
             $certificatePath = Join-Path $env:RUNNER_TEMP 'checksentry-signing.pfx'

@@ -1,0 +1,366 @@
+{
+  "auditDate": "2026-11-07",
+  "applicationVersion": "1.2.0 (locked)",
+  "runtimeDependencies": [
+    {
+      "name": "Microsoft.NET.Sdk (.NET 8 SDK)",
+      "requiredMinimum": "8.0.427",
+      "source": "global.json",
+      "packageReferenceCount": 0,
+      "note": "Self-contained Windows launcher; actual runtime must be verified from Windows publish output."
+    },
+    {
+      "name": "Windows PowerShell",
+      "requiredVersion": "5.1 (system installation)",
+      "source": "launcher/Program.cs"
+    },
+    {
+      "name": "ImportExcel",
+      "version": "7.8.10",
+      "source": "Modules/ImportExcel/7.8.10/ImportExcel.psd1",
+      "integrityFiles": 213
+    },
+    {
+      "name": "EPPlus.dll",
+      "version": "UNCONFIRMED",
+      "source": "Modules/ImportExcel/7.8.10/EPPlus.dll",
+      "sha256": "c32cefbd1ea051ed3af06e7fb9dd558598a612f042164140cd8be722a351bc63",
+      "note": "Binary assembly version not identified in this Linux audit environment."
+    }
+  ],
+  "buildActions": {
+    "actions/checkout": "v7.0.1",
+    "actions/setup-dotnet": "v6.0.0",
+    "github/codeql-action": "v4.38.2",
+    "actions/upload-artifact": "v7.0.1",
+    "actions/download-artifact": "v8.0.1",
+    "actions/attest-build-provenance": "v4.2.2"
+  },
+  "upstreamSnapshot": [
+    {
+      "upstreamRepository": "actions/checkout",
+      "snapshotCommit": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "upstreamPackageMetadataVersion": "7.0.1",
+      "snapshotDirectDependencies": {
+        "@actions/core": "3.0.1",
+        "@actions/exec": "3.0.0",
+        "@actions/github": "9.1.1",
+        "@actions/io": "3.0.2",
+        "@actions/tool-cache": "4.0.0"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "undici",
+          "versions": [
+            "6.27.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 24,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    },
+    {
+      "upstreamRepository": "actions/setup-dotnet",
+      "snapshotCommit": "a98b56852c35b8e3190ac28c8c2271da59106c68",
+      "upstreamPackageMetadataVersion": "6.0.0",
+      "snapshotDirectDependencies": {
+        "@actions/cache": "6.2.0",
+        "@actions/core": "3.0.1",
+        "@actions/exec": "3.0.0",
+        "@actions/github": "9.1.1",
+        "@actions/glob": "0.7.0",
+        "@actions/http-client": "4.0.1",
+        "@actions/io": "3.0.2",
+        "fast-xml-parser": "5.9.3",
+        "json5": "2.2.3",
+        "semver": "7.8.5"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "brace-expansion",
+          "versions": [
+            "1.1.15",
+            "5.0.6"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "fast-xml-parser",
+          "versions": [
+            "5.9.3"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "undici",
+          "versions": [
+            "6.27.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 65,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    },
+    {
+      "upstreamRepository": "github/codeql-action",
+      "snapshotCommit": "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2",
+      "upstreamPackageMetadataVersion": "4.38.2",
+      "snapshotDirectDependencies": {
+        "@actions/artifact": "5.0.3",
+        "@actions/artifact-legacy": "1.1.2",
+        "@actions/cache": "5.2.0",
+        "@actions/core": "2.0.3",
+        "@actions/exec": "2.0.0",
+        "@actions/github": "8.0.1",
+        "@actions/glob": "0.5.1",
+        "@actions/http-client": "3.0.2",
+        "@actions/io": "2.0.0",
+        "@actions/tool-cache": "3.0.1",
+        "@octokit/core": "7.0.8",
+        "@octokit/plugin-paginate-rest": "15.0.0",
+        "@octokit/plugin-rest-endpoint-methods": "18.0.0",
+        "@octokit/plugin-retry": "8.1.1",
+        "archiver": "8.0.0",
+        "fast-deep-equal": "3.1.3",
+        "follow-redirects": "1.16.0",
+        "get-folder-size": "5.0.0",
+        "https-proxy-agent": "7.0.6",
+        "js-yaml": "5.4.2",
+        "jsonschema": "1.5.0",
+        "long": "5.3.2",
+        "node-forge": "1.4.0",
+        "semver": "7.8.5",
+        "undici": "6.28.0",
+        "uuid": "14.0.2"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "brace-expansion",
+          "versions": [
+            "1.1.18",
+            "2.1.4",
+            "5.0.9"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "node-forge",
+          "versions": [
+            "1.4.0"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "undici",
+          "versions": [
+            "6.28.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 228,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    },
+    {
+      "upstreamRepository": "actions/upload-artifact",
+      "snapshotCommit": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+      "upstreamPackageMetadataVersion": "7.0.1",
+      "snapshotDirectDependencies": {
+        "@actions/artifact": "6.2.0",
+        "@actions/core": "3.0.0",
+        "@actions/github": "9.0.0",
+        "@actions/glob": "0.6.1",
+        "@actions/io": "3.0.2",
+        "minimatch": "10.2.4"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "brace-expansion",
+          "versions": [
+            "1.1.12",
+            "2.0.2",
+            "5.0.3"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "fast-xml-builder",
+          "versions": [
+            "1.0.0"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "fast-xml-parser",
+          "versions": [
+            "5.4.1"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "lodash",
+          "versions": [
+            "4.17.23"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "undici",
+          "versions": [
+            "6.23.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 156,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    },
+    {
+      "upstreamRepository": "actions/download-artifact",
+      "snapshotCommit": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+      "upstreamPackageMetadataVersion": "8.0.1",
+      "snapshotDirectDependencies": {
+        "@actions/artifact": "6.2.1",
+        "@actions/core": "3.0.0",
+        "minimatch": "10.1.1"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "@isaacs/brace-expansion",
+          "versions": [
+            "2.0.2",
+            "5.0.0"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "brace-expansion",
+          "versions": [
+            "2.0.2",
+            "5.0.0"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "fast-xml-parser",
+          "versions": [
+            "5.3.4"
+          ],
+          "severityInArchivedAudit": "critical"
+        },
+        {
+          "name": "lodash",
+          "versions": [
+            "4.17.23"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "minimatch",
+          "versions": [
+            "10.1.1",
+            "5.1.6",
+            "9.0.5"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "undici",
+          "versions": [
+            "6.23.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 150,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    },
+    {
+      "upstreamRepository": "actions/attest",
+      "snapshotCommit": "508db95dd578ae2727ebd6217d5ba78e4fbda05d",
+      "upstreamPackageMetadataVersion": "4.1.0",
+      "snapshotDirectDependencies": {
+        "@actions/attest": "3.2.0",
+        "@actions/core": "3.0.1",
+        "@actions/github": "9.1.1",
+        "@actions/glob": "0.7.0",
+        "@sigstore/oci": "0.7.1",
+        "csv-parse": "7.0.1"
+      },
+      "snapshotTransitiveKeyVersions": [
+        {
+          "name": "@actions/attest",
+          "versions": [
+            "3.2.0"
+          ],
+          "severityInArchivedAudit": "moderate"
+        },
+        {
+          "name": "@sigstore/core",
+          "versions": [
+            "2.0.0",
+            "3.0.1",
+            "7.0.6"
+          ],
+          "severityInArchivedAudit": "moderate"
+        },
+        {
+          "name": "@sigstore/sign",
+          "versions": [
+            "3.1.0"
+          ],
+          "severityInArchivedAudit": "moderate"
+        },
+        {
+          "name": "brace-expansion",
+          "versions": [
+            "2.1.0",
+            "5.0.6",
+            "5.0.7"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "csv-parse",
+          "versions": [
+            "7.0.1"
+          ],
+          "severityInArchivedAudit": "moderate"
+        },
+        {
+          "name": "ip-address",
+          "versions": [
+            "10.2.0"
+          ],
+          "severityInArchivedAudit": "high"
+        },
+        {
+          "name": "undici",
+          "versions": [
+            "6.25.0"
+          ],
+          "severityInArchivedAudit": "high"
+        }
+      ],
+      "snapshotDependencyRows": 148,
+      "note": "Upstream lockfile snapshot from 2026-10-02; NOT a local dependency lock or proof of compiled-action reachability."
+    }
+  ],
+  "localManifests": {
+    "package.json": false,
+    "package-lock.json": false,
+    "pnpm-lock.yaml": false,
+    "requirements.txt": false,
+    "go.mod": false,
+    "Cargo.toml": false,
+    "NuGetPackagesLock": false,
+    "launcherPackageReferences": 0
+  },
+  "notes": [
+    "No npm/pip/cargo/go direct runtime dependencies in checked project",
+    "Upstream snapshot historical source may not match current pinned action bundle",
+    "Archived SECURITY-DEPENDENCIES-UPDATED.json includes every snapshot dependency row and advisory details"
+  ]
+}

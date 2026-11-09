@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.1.5</Version>
+    <Version>1.2.0</Version>
     <AssemblyName>CheckSentry</AssemblyName>
     <RootNamespace>CheckSentry.Launcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -20,6 +20,7 @@
     <EmbeddedResource Include="..\Start-ComplianceCheck.ps1" LogicalName="payload/Start-ComplianceCheck.ps1" />
     <EmbeddedResource Include="..\Get-InstalledSoftware.ps1" LogicalName="payload/Get-InstalledSoftware.ps1" />
     <EmbeddedResource Include="..\Get-InstalledExtensions.ps1" LogicalName="payload/Get-InstalledExtensions.ps1" />
+    <EmbeddedResource Include="..\Get-ExecutionHistory.ps1" LogicalName="payload/Get-ExecutionHistory.ps1" />
     <EmbeddedResource Include="..\report_template.html" LogicalName="payload/report_template.html" />
     <EmbeddedResource Include="..\special_template.html" LogicalName="payload/special_template.html" />
     <EmbeddedResource Include="..\management_template.html" LogicalName="payload/management_template.html" />

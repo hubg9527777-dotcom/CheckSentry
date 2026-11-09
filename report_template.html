@@ -210,10 +210,82 @@
   /* 热区向下延伸，覆盖住浮层与原文字之间的间隙，确保鼠标移动时悬浮不断开、不抖动 */
   .copyable-tooltip::before { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -15px; z-index: -1; }
   .tooltip-wrapper:hover .copyable-tooltip { display: block; }
+
+  /* CheckSentry 1.2.0: local execution evidence within the existing report. */
+  .exec-audit { padding: 16px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; margin: 14px 0 20px; }
+  .exec-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .exec-heading h2 { color: #1e3a5f; font-size: 18px; }
+  .exec-counter { background: #e9f0f7; color: #1e3a5f; padding: 5px 10px; border-radius: 18px; font-size: 12px; }
+  .exec-tip { font-size: 12.5px; color: #425466; line-height: 1.7; margin: 10px 0; }
+  .exec-source-details { margin: 7px 0 9px; color: #475569; }
+  .exec-source-details > summary { display: inline-block; font-size: 12px; }
+  .exec-source { font-size: 12px; line-height: 1.65; color: #475569; background: #f6f8fb; padding: 9px 11px; border-radius: 6px; overflow-wrap: anywhere; }
+  .exec-controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 13px; margin: 12px 0; }
+  .exec-controls label { display: flex; gap: 6px; align-items: center; }
+  .exec-controls select, .exec-controls input { border-radius: 6px; border: 1px solid #cbd5e1; padding: 7px 8px; font-size: 13px; background: #fff; }
+  .exec-controls input { min-width: 200px; }
+  .exec-coverage-alert { border: 1px solid #f2c46d; background: #fffbeb; color: #854d0e; padding: 9px 11px; border-radius: 6px; margin: 9px 0; font-size: 12.5px; line-height: 1.6; }
+  .exec-table-scroll { max-width: 100%; overflow-x: auto; max-height: 610px; overflow-y: auto; }
+  table.exec-table { width: 100%; min-width: 920px; table-layout: fixed; border-collapse: collapse; }
+  .exec-table thead th { position: sticky; top: 0; z-index: 2; }
+  .exec-table th, .exec-table td {
+    width: auto !important; min-width: 0 !important; max-width: none !important;
+    font-size: 12px; line-height: 1.6; padding: 10px 12px; height: auto; max-height: none;
+    vertical-align: top; white-space: normal !important; overflow: hidden !important;
+    overflow-wrap: anywhere; word-break: normal;
+  }
+  .exec-table tbody tr { height: auto; max-height: none; }
+  .exec-table td:nth-child(2) { font-variant-numeric: tabular-nums; }
+  .exec-table td strong { display: block; overflow-wrap: anywhere; }
+  .exec-table small { display: block; color: #64748b; font-size: 11px; margin-top: 4px; overflow-wrap: anywhere; }
+  .exec-path {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+    max-width: 100%; max-height: 4.8em; overflow: hidden;
+    color: #1e3a5f; font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 11.5px; line-height: 1.6; white-space: normal !important;
+    overflow-wrap: anywhere; word-break: break-all;
+  }
+  .exec-muted { color: #64748b; }
+  .exec-evidence { display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-height: 3.2em; overflow: hidden; }
+  .exec-action-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; min-width: 0; }
+  .exec-reveal, .exec-copy { display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 11.5px;
+    white-space: nowrap; margin: 0 !important; border: 1px solid #2563eb; color: #1d4ed8;
+    background: #eff6ff; padding: 4px 7px; border-radius: 5px; cursor: pointer; }
+  .exec-reveal:hover, .exec-copy:hover { background: #dbeafe; }
+  .exec-copy { background: #fff; }
+  .exec-empty { color: #8a5800; font-size: 13px; }
+  .exec-entry[data-priority="0"] { background: #fdecea; }
+  .exec-entry[data-priority="1"] { background: #fffbeb; }
+  .exec-entry[data-priority="2"] { background: #f1f5f9; }
+  .item-history-linked { font-size: 10.5px; color: #415c79; margin-top: 4px; overflow-wrap: anywhere; line-height: 1.45; }
+  .exec-merged-summary { padding: 8px 11px; background: #eff6ff; border-radius: 6px; color: #1e40af; font-size: 12px; line-height: 1.6; }
+  .exec-group { border: 1px solid #e2e8f0; border-radius: 8px; margin: 9px 0; overflow: hidden; }
+  .exec-group > summary { padding: 10px 14px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; justify-content: space-between; font-weight: 650; }
+  .exec-group > summary small { font-weight: 400; color: #64748b; font-size: 11px; }
+  .exec-group-black > summary { background: #fff1f2; color: #991b1b; }
+  .exec-group-review > summary { background: #fffbeb; color: #92400e; }
+  .exec-group-white > summary { background: #ecfdf5; color: #166534; }
+  .exec-group-other > summary { background: #f8fafc; color: #334155; }
+  .exec-group .exec-table-scroll { max-height: 430px; }
+  .exec-group-empty { padding: 5px 14px 13px; font-size: 12px; color: #64748b; }
+  .exec-group[hidden] { display: none; }
+  .exec-source-help { padding: 9px 12px; margin: 7px 0; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; line-height: 1.7; }
+  .exec-source-help p { margin: 5px 0; }
+  .exec-tech-details { margin-top: 8px; font-size: 11px; color: #64748b; }
+  .exec-batch-actions { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; padding: 9px 12px; background: #f8fafc; border-radius: 7px; margin-top: 10px; font-size: 12px; }
+  .exec-batch-actions button { padding: 5px 9px; border-radius: 5px; border: 1px solid #cbd5e1; cursor: pointer; color: #fff; }
+  .exec-batch-actions #execCopySelected { background: #222; }
+  .exec-batch-actions span:last-child { color: #64748b; flex-basis: 100%; font-size: 11px; }
+  .exec-group > summary { align-items: center; flex-wrap: wrap; }
+  .exec-select-group { display: inline-flex; gap: 4px; align-items: center; margin-left: auto; color: #334155; font-size: 11px; font-weight: normal; cursor: pointer; }
+  .exec-check-cell { text-align: center; }
+  .exec-check-cell input { width: 15px; height: 15px; cursor: pointer; }
+  .exec-rule-fields { display: none !important; }
+  .exec-origin-tag { font-weight: 600; color: #1d4ed8 !important; }
 </style>
 </head>
 <body>
-  <h1>软件清单核对报告</h1>
+  <h1>软件清单核对报告 <small style="font-size:12px;font-weight:500;color:#718096">CheckSentry 1.2.0</small></h1>
   __SUMMARY__
   
   <div class="batch-actions" style="position: sticky; top: 0; z-index: 99; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -330,6 +402,15 @@ async function submitRule(evt) {
 function updateBatchCount() {
   const count = document.querySelectorAll('input.row-chk:checked').length;
   document.getElementById('batchCountText').textContent = count;
+  const historyCount = document.getElementById('execBatchCount');
+  if (historyCount) historyCount.textContent = document.querySelectorAll('#executionAudit input.exec-row-chk:checked').length;
+  document.querySelectorAll('#executionAudit input.exec-group-select').forEach(groupSelect => {
+    const group = groupSelect.closest('.exec-group');
+    if (!group) return;
+    const visible = Array.from(group.querySelectorAll('input.exec-row-chk')).filter(chk => !chk.closest('tr').hidden);
+    groupSelect.checked = visible.length > 0 && visible.every(chk => chk.checked);
+    groupSelect.indeterminate = visible.some(chk => chk.checked) && !groupSelect.checked;
+  });
   
   // 更新各个区域的“全选本区”复选框状态
   document.querySelectorAll('input.section-chk').forEach(secChk => {
@@ -404,8 +485,8 @@ async function saveInlineCell(cell, form, oldValue) {
   }
 }
 
-async function copySelectedRows() {
-  const checked = document.querySelectorAll('input.row-chk:checked');
+async function copySelectedRows(historyOnly = false) {
+  const checked = document.querySelectorAll(historyOnly ? '#executionAudit input.exec-row-chk:checked' : 'input.row-chk:checked');
   if (checked.length === 0) {
     showToast('请先勾选要复制的项', true);
     return;
@@ -459,16 +540,21 @@ async function copySelectedRows() {
   }
 }
 
-async function submitBatch(status) {
-  const checked = document.querySelectorAll('input.row-chk:checked');
+async function submitBatch(status, historyOnly = false) {
+  const checked = document.querySelectorAll(historyOnly ? '#executionAudit input.exec-row-chk:checked' : 'input.row-chk:checked');
   if (checked.length === 0) {
     showToast('请先勾选要操作的项', true);
     return;
   }
   
-  if (!confirm(`确定要将选中的 ${checked.length} 项批量设为 [${status}] 吗？`)) {
-    return;
+  const weakHistory = Array.from(checked).filter(chk => chk.closest('tr')?.dataset.historyWeak === 'true').length;
+  const historyTotal = Array.from(checked).filter(chk => !!chk.closest('#executionAudit')).length;
+  let warning = `确定要将选中的 ${checked.length} 项批量设为 [${status}] 吗？`;
+  if (historyTotal) warning += '\n历史记录将写入本机 Excel 规则，不会自动修改云端 Sheet。';
+  if (weakHistory && status === '允许') {
+    warning += `\n其中 ${weakHistory} 项尚未确认完整文件身份。按名称加入白名单可能放行其他同名文件，请先核实后再确认。`;
   }
+  if (!confirm(warning)) return;
   
   const payloadList = [];
   checked.forEach(chk => {
@@ -492,8 +578,23 @@ async function submitBatch(status) {
   });
   
   if (payloadList.length === 0) return;
+  // One approved software rule per identity, even when the same portable program
+  // was executed from multiple folders. Keep all evidence rows in the report.
+  if (historyOnly) {
+    const identities = new Set();
+    const distinct = [];
+    for (const row of payloadList) {
+      const key = [row.itemType, row.matchType, row.namePattern.trim().toLocaleLowerCase(),
+                   row.version.trim().toLocaleLowerCase(), row.publisher.trim().toLocaleLowerCase()].join('\u001f');
+      if (identities.has(key)) continue;
+      identities.add(key);
+      distinct.push(row);
+    }
+    payloadList.length = 0;
+    payloadList.push(...distinct);
+  }
   
-  const buttons = document.querySelectorAll('.batch-actions button');
+  const buttons = document.querySelectorAll('.batch-actions button, .exec-batch-actions button');
   buttons.forEach(b => b.disabled = true);
   showToast('正在批量处理，请稍候...', false, true);
   
@@ -501,7 +602,7 @@ async function submitBatch(status) {
     const res = await apiPost('/api/addBatch', payloadList);
     const data = await res.json();
     if (data.ok) {
-      showToast(`批量处理成功：成功 ${data.successCount} 项`, false);
+      showToast(`批量处理成功：写入 ${data.successCount} 条本机规则；云端需另外维护`, false);
       setTimeout(() => { window.location.href = '/'; }, 500);
     } else {
       showToast('批量保存部分失败：' + (data.error || '未知错误'), true);
@@ -513,9 +614,14 @@ async function submitBatch(status) {
   }
 }
 
-document.getElementById('btnCopySelected').addEventListener('click', copySelectedRows);
+document.getElementById('btnCopySelected').addEventListener('click', () => copySelectedRows(false));
 document.querySelectorAll('[data-batch-status]').forEach(button => {
-  button.addEventListener('click', () => submitBatch(button.dataset.batchStatus));
+  button.addEventListener('click', () => submitBatch(button.dataset.batchStatus, false));
+});
+const execCopySelected = document.getElementById('execCopySelected');
+if (execCopySelected) execCopySelected.addEventListener('click', () => copySelectedRows(true));
+document.querySelectorAll('[data-history-batch-status]').forEach(button => {
+  button.addEventListener('click', () => submitBatch(button.dataset.historyBatchStatus, true));
 });
 document.querySelectorAll('form.rule-action-form').forEach(form => {
   form.addEventListener('submit', submitRule);
@@ -661,6 +767,93 @@ if (reloadButton) reloadButton.addEventListener('click', async () => {
   }
 });
 updateBatchCount();
+
+// Local-only historical execution review. No path is submitted by the browser to the backend.
+(function initExecutionAudit() {
+  const root = document.getElementById('executionAudit');
+  if (!root) return;
+  const selector = document.getElementById('execFilter');
+  const search = document.getElementById('execSearch');
+  const visible = document.getElementById('execVisibleCount');
+  const entries = Array.from(root.querySelectorAll('.exec-entry'));
+  const groups = Array.from(root.querySelectorAll('details.exec-group'));
+  function render() {
+    const mode = selector.value;
+    const query = (search.value || '').trim().toLocaleLowerCase();
+    let matchedTotal = 0;
+    let displayedTotal = 0;
+    for (const row of entries) {
+      const status = row.dataset.executionStatus || row.dataset.status || '';
+      const matchesMode = mode === 'focus' || mode === 'all' ||
+        (mode === 'portable' && status.startsWith('疑似免安装')) ||
+        (mode === 'missing' && (status.includes('位置') || status.includes('历史路径') || status.includes('候选路径')));
+      const text = (row.dataset.search || '').toLocaleLowerCase();
+      const active = matchesMode && (!query || text.includes(query));
+      row.hidden = !active;
+      // Never let a hidden selection be submitted accidentally after changing filters.
+      if (!active) {
+        const checkbox = row.querySelector('input.exec-row-chk');
+        if (checkbox) checkbox.checked = false;
+      }
+      if (active) matchedTotal++;
+    }
+    for (const group of groups) {
+      const matched = Array.from(group.querySelectorAll('.exec-entry')).filter(row => !row.hidden).length;
+      const hasSearch = query.length > 0;
+      // 默认展示四类分组：只展开黑名单及待核实，避免系统组件挤占屏幕。
+      // 搜索和明确筛选时自动展开命中分组。
+      group.hidden = (matched === 0 && (hasSearch || mode === 'portable' || mode === 'missing'));
+      if (hasSearch || mode === 'all' || mode === 'portable' || mode === 'missing') {
+        group.open = matched > 0;
+      } else {
+        group.open = group.dataset.group === 'black' || group.dataset.group === 'review';
+      }
+      if (group.open) displayedTotal += matched;
+    }
+    if (visible) visible.textContent = '当前展开 ' + displayedTotal + ' 项 · 匹配 ' + matchedTotal + ' / ' + entries.length + ' 项';
+    updateBatchCount();
+  }
+  root.querySelectorAll('.exec-select-group').forEach(label => label.addEventListener('click', event => event.stopPropagation()));
+  root.querySelectorAll('input.exec-group-select').forEach(groupCheckbox => groupCheckbox.addEventListener('change', () => {
+    const group = groupCheckbox.closest('.exec-group');
+    if (!group) return;
+    group.querySelectorAll('.exec-entry').forEach(row => {
+      const chk = row.querySelector('input.exec-row-chk');
+      if (chk && !row.hidden) chk.checked = groupCheckbox.checked;
+    });
+    updateBatchCount();
+  }));
+  selector.addEventListener('change', render);
+  search.addEventListener('input', render);
+  for (const group of groups) {
+    group.addEventListener('toggle', () => {
+      const displayed = entries.filter(row => !row.hidden && row.closest('details.exec-group')?.open).length;
+      const matched = entries.filter(row => !row.hidden).length;
+      if (visible) visible.textContent = '当前展开 ' + displayed + ' 项 · 匹配 ' + matched + ' / ' + entries.length + ' 项';
+    });
+  }
+  root.addEventListener('click', async function(evt) {
+    const copy = evt.target.closest('button.exec-copy');
+    if (copy && root.contains(copy)) {
+      try {
+        await navigator.clipboard.writeText(copy.dataset.path || '');
+        showToast('路径已复制');
+      } catch (error) { showToast('复制失败，请手动选择路径复制', true); }
+      return;
+    }
+    const btn = evt.target.closest('button.exec-reveal');
+    if (!btn || !root.contains(btn)) return;
+    btn.disabled = true;
+    try {
+      const response = await apiPost('/api/execution/reveal', {key: btn.dataset.key});
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || '无法定位程序');
+    } catch (error) {
+      showToast(error.message || '无法定位程序', true);
+    } finally { btn.disabled = false; }
+  });
+  render();
+})();
 
 async function loadCheckSentryIcon(img) {
   if (!img || img.dataset.loaded === '1') return;

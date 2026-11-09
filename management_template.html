@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -149,8 +149,7 @@
     <select id="typeFilter">
       <option value="">所有类型</option>
       <option value="软件">软件</option>
-      <option value="Chromium插件">Chromium插件</option>
-      <option value="Firefox插件">Firefox插件</option>
+      <option value="浏览器扩展">浏览器扩展</option>
     </select>
     <div style="flex: 1;"></div>
         <button id="undoButton" class="undo-btn" disabled>撤销上一步</button>
@@ -278,8 +277,7 @@
           <label>类型</label>
           <select id="formType" required>
             <option value="软件">软件</option>
-            <option value="Chromium插件">Chromium插件</option>
-            <option value="Firefox插件">Firefox插件</option>
+            <option value="浏览器扩展">浏览器扩展</option>
           </select>
         </div>
         
@@ -347,6 +345,11 @@ async function apiPost(url, payload) {
     },
     body: JSON.stringify(payload)
   });
+}
+
+function normalizeRuleType(value) {
+  if (value === 'Chromium插件' || value === 'Firefox插件' || value === '浏览器扩展') return '浏览器扩展';
+  return value || '软件';
 }
 
 function escapeHtml(value) {
@@ -487,7 +490,7 @@ function inlineSavePayload(rule, sheet, key, value) {
     id: rule.id,
     originalSheet: sheet,
     targetSheet: sheet,
-    type: rule['类型'] || '软件',
+    type: normalizeRuleType(rule['类型']),
     extId: rule['插件ID'] || '',
     matchType: rule['匹配方式'] || '精确',
     namePattern: rule['软件名关键词'] || '',
@@ -832,7 +835,7 @@ function filterTable() {
   
   let count = 0;
   for (const rule of rules) {
-    const type = rule['类型'] || '软件';
+    const type = normalizeRuleType(rule['类型']);
     if (typeFilter && type !== typeFilter) continue;
     
     const searchStr = `${type} ${rule['插件ID']||''} ${rule['软件名关键词']||''} ${rule['发布者']||''} ${inlineDisplayValue(rule, '状态/分类')} ${inlineDisplayValue(rule, '备注/原因')} ${rule['添加人']||''} ${inlineDisplayValue(rule, '添加时间')}`.toLowerCase();
@@ -841,7 +844,7 @@ function filterTable() {
     const tr = document.createElement('tr');
     tr.dataset.ruleId = rule.id;
     tr.dataset.ruleSheet = currentTab;
-    const fallbackIcon = type === '软件' ? '&#128187;' : (type === 'Chromium插件' ? '&#127760;' : '&#129418;');
+    const fallbackIcon = type === '软件' ? '&#128187;' : '&#127760;';
     const iconData = rule['图标数据'] || '';
     const iconKey = rule['图标键'] || '';
         const safeId = escapeHtml(rule.id || '-');
@@ -1081,7 +1084,7 @@ async function submitPasswordSetup(evt) {
 
 function updateFormFields() {
 
-  const type = document.getElementById('formType').value;
+  const type = normalizeRuleType(document.getElementById('formType').value);
   const isSoftware = type === '软件';
   document.getElementById('groupExtId').style.display = isSoftware ? 'none' : 'block';
   
@@ -1107,7 +1110,7 @@ function openModal(rule = null, actualSheet = null) {
   document.getElementById('formOriginalSheet').value = rule ? targetSheet : '';
   
   document.getElementById('formTargetSheet').value = targetSheet;
-  document.getElementById('formType').value = rule ? (rule['类型'] || '软件') : '软件';
+  document.getElementById('formType').value = rule ? normalizeRuleType(rule['类型']) : '软件';
   document.getElementById('formExtId').value = rule ? (rule['插件ID'] || '') : '';
   document.getElementById('formMatchType').value = rule ? (rule['匹配方式'] || '精确') : '精确';
   document.getElementById('formNamePattern').value = rule ? (rule['软件名关键词'] || '') : '';
