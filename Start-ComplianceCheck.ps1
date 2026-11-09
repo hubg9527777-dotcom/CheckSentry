@@ -3188,7 +3188,7 @@ function Get-ExecutionAuditRows {
         $source = @($entry.Sources | Select-Object -Unique)
         $times = @($entry.Times | ForEach-Object { [datetime]$_ } | Sort-Object -Unique -Descending)
         $latest = if ($times.Count -gt 0) { [datetime]$times[0] } else { [datetime]::MinValue }
-        $isWindows = $path -and (Test-CheckSentryPathInside -Path $path -Parent $windows)
+        $isWindowsSystemPath = $path -and (Test-CheckSentryPathInside -Path $path -Parent $windows)
         $isPrograms = $false
         foreach ($root in $programRoots) { if (Test-CheckSentryPathInside -Path $path -Parent $root) { $isPrograms = $true; break } }
         $interactionOnly = ($source.Count -eq 1 -and $source[0] -eq 'UserAssist')
@@ -3274,7 +3274,7 @@ function Get-ExecutionAuditRows {
         $status = '待核实'
         $priority = 2
         if ($interactionOnly) { $status = 'GUI 交互线索（尚不能确定执行）'; $priority = 4 }
-        elseif ($isWindows) { $status = 'Windows 系统路径'; $priority = 5 }
+        elseif ($isWindowsSystemPath) { $status = 'Windows 系统路径'; $priority = 5 }
         elseif ($isInstalled) { $status = '路径关联已安装软件'; $priority = 4 }
         elseif ($path -and $isPrograms) { $status = '程序目录组件'; $priority = 3 }
         elseif ($path -and (Test-CheckSentryPathInside -Path $path -Parent $userAppRoot)) { $status = '用户应用目录（安装情况待核实）'; $priority = 3 }
@@ -3292,7 +3292,7 @@ function Get-ExecutionAuditRows {
         $locationRank = 7
         $locationLabel = '位置未知'
         if ($path) {
-            if ($isWindows) { $locationRank = 9; $locationLabel = '系统目录' }
+            if ($isWindowsSystemPath) { $locationRank = 9; $locationLabel = '系统目录' }
             elseif (Test-CheckSentryPathInside -Path $path -Parent $downloadRoot) { $locationRank = 0; $locationLabel = '下载目录' }
             elseif ((Test-CheckSentryPathInside -Path $path -Parent $desktopRoot) -or
                     (Test-CheckSentryPathInside -Path $path -Parent $documentsRoot)) { $locationRank = 1; $locationLabel = '桌面 / 文档目录' }
