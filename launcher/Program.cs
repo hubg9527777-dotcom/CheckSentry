@@ -82,7 +82,7 @@ internal static class Program
             {
                 if (!string.IsNullOrWhiteSpace(logPath))
                 {
-                    File.AppendAllText(logPath, exception.ToString() + Environment.NewLine, Utf8NoBom);
+                    File.AppendAllText(logPath, exception + Environment.NewLine, Utf8NoBom);
                 }
                 MessageBox(IntPtr.Zero, message + (string.IsNullOrWhiteSpace(logPath) ? string.Empty : "\n\n错误日志：\n" + logPath), "CheckSentry", 0x10);
             }
