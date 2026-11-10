@@ -1286,6 +1286,7 @@ function Assert-XlsxArchiveComplete {
             $entryNames[$entry.FullName] = $true
             $expandedBytes += [int64]$entry.Length
             if ($expandedBytes -gt 104857600) { throw 'XLSX 解压后超过 100 MB 安全限制。' }
+            $previousActualBytes = $actualBytes
             $entryStream = $null
             try {
                 $entryStream = $entry.Open()
@@ -1295,6 +1296,11 @@ function Assert-XlsxArchiveComplete {
                 }
             } finally {
                 if ($null -ne $entryStream) { $entryStream.Dispose() }
+            }
+            # Reject a malformed ZIP part whose actual decoded bytes differ from its declared size.
+            # The aggregate cap above limits resource use even when ZIP headers lie.
+            if (($actualBytes - $previousActualBytes) -ne [int64]$entry.Length) {
+                throw 'XLSX 文件条目长度与实际解压数据不一致。'
             }
             if (-not $SkipXmlValidation -and ($entry.FullName.EndsWith('.xml', [StringComparison]::OrdinalIgnoreCase) -or $entry.FullName.EndsWith('.rels', [StringComparison]::OrdinalIgnoreCase))) {
                 $xmlStream = $null

@@ -16,6 +16,7 @@ for (const pattern of [
   /\$entryNames\.ContainsKey/,
   /\$expandedBytes -gt 104857600/,
   /\$actualBytes -gt 104857600/,
+  /\$actualBytes - \$previousActualBytes/,
   /DtdProcessing = \[System\.Xml\.DtdProcessing\]::Prohibit/,
 ]) {
   assert(pattern.test(fn), 'Missing XLSX safety condition: ' + pattern);
