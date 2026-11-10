@@ -7,23 +7,37 @@ const server = spawn(process.argv[2] || 'pwsh', ['-NoProfile', '-Command', `
 . '${root}/Start-ComplianceCheck.ps1' -LibraryOnly
 function Start-InventoryScanJobs { }
 function Stop-InventoryScanJobs { }
-function Start-Process { }
+# Intercept only the test browser launch. Production console output must not expose the session token.
+function Start-Process {
+  param([string]$FilePath)
+  if ($FilePath -notmatch '^http://localhost:[0-9]+/#session=[a-f0-9]{64}$') {
+    throw 'Unexpected bootstrap URL passed to the test browser launcher.'
+  }
+  Write-Output ('CHECKSENTRY_TEST_BROWSER_URL=' + $FilePath)
+}
 function Get-InventoryScanStatus { return @{ Ready = $false; Error = ''; Message = 'Test scan' } }
 Start-ReportServer -RequestedPort 18787 -Path '${root}/list_template.xlsx' -IncludeSystem $false
 `], {stdio:['ignore','pipe','pipe']});
 let output = '';
-const timeout = setTimeout(() => server.kill(), 20000);
+let timedOut = false;
+const timeout = setTimeout(() => { timedOut = true; server.kill(); }, 20000);
+const sanitize = value => value.replace(/#session=[a-f0-9]{64}/gi, '#session=[REDACTED]');
 (async () => {
   try {
     const link = await new Promise((resolve, reject) => {
       server.stdout.on('data', chunk => {
         output += chunk;
-        const match = output.match(/http:\/\/localhost:\d+\/#session=[a-f0-9]{64}/);
-        if (match) resolve(match[0]);
+        const match = output.match(/CHECKSENTRY_TEST_BROWSER_URL=(http:\/\/localhost:\d+\/#session=[a-f0-9]{64})/);
+        if (match) {
+          resolve(match[1]);
+        }
       });
-      server.on('exit', code => reject(new Error(`Server exited ${code}: ${output}`)));
+      server.on('exit', code => reject(new Error(`${timedOut ? 'Timed out waiting for test browser URL' : 'Server exited ' + code}: ${sanitize(output)}`)));
+      server.on('error', reject);
       server.stderr.on('data', chunk => { output += chunk; });
     });
+    // Production startup messages must never reveal the token; only our test mock may provide it.
+    assert.doesNotMatch(output.replace('CHECKSENTRY_TEST_BROWSER_URL=' + link, ''), /#session=[a-f0-9]{64}/i);
     const url = new URL(link);
     const token = new URLSearchParams(url.hash.slice(1)).get('session');
     const base = url.origin;
